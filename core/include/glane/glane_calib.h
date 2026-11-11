@@ -46,6 +46,12 @@ int32_t glane_calib_apply(const glane_calib *c, int32_t x_milli);
  * sinon un code non nul (voir glane_calib_err).                           */
 int glane_calib_parse_coef(const char *s, int64_t *out_milli_scaled);
 
+/* Parse un décimal signé (exposant optionnel) en entier échelle 10^scale_exp.
+ * C'est LE parseur décimal unique du socle : calib l'appelle avec scale_exp=6
+ * (coefficients), desc.c avec scale_exp=3 (valeurs de mesure en milli-unités).
+ * Retourne 0 si OK, sinon un code non nul (voir glane_calib_err).          */
+int glane_parse_decimal_scaled(const char *s, int scale_exp, int64_t *out);
+
 /* Message court pour un code d'erreur de glane_calib_parse_coef (statique). */
 const char *glane_calib_err(int code);
 

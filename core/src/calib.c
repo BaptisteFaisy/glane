@@ -153,11 +153,12 @@ static int parse_exponent(const char **pp, int *exp)
     return 0;
 }
 
-/* Met le significande à l'échelle 10^6 compte tenu des décimales (fd) et de
- * l'exposant (exp). Arrondi au plus proche, demi à l'infini.              */
-static int scale_to_micro(int64_t sig, int fd, int exp, int neg, int64_t *out)
+/* Met le significande à l'échelle 10^scale_exp compte tenu des décimales (fd)
+ * et de l'exposant (exp). Arrondi au plus proche, demi à l'infini.         */
+static int scale_decimal(int64_t sig, int fd, int exp, int neg,
+                         int scale_exp, int64_t *out)
 {
-    int total = exp - fd + 6;
+    int total = exp - fd + scale_exp;
     int64_t scaled;
     if (total >= 0) {
         int64_t m = pow10(total);
@@ -179,7 +180,7 @@ static int scale_to_micro(int64_t sig, int fd, int exp, int neg, int64_t *out)
     return 0;
 }
 
-int glane_calib_parse_coef(const char *s, int64_t *out)
+int glane_parse_decimal_scaled(const char *s, int scale_exp, int64_t *out)
 {
     if (s == NULL || out == NULL) {
         return 1;
@@ -196,7 +197,12 @@ int glane_calib_parse_coef(const char *s, int64_t *out)
     if (*p != '\0') {
         return 5;  /* caractère parasite */
     }
-    return scale_to_micro(sig, fd, exp, neg, out);
+    return scale_decimal(sig, fd, exp, neg, scale_exp, out);
+}
+
+int glane_calib_parse_coef(const char *s, int64_t *out)
+{
+    return glane_parse_decimal_scaled(s, 6, out);
 }
 
 const char *glane_calib_err(int code)

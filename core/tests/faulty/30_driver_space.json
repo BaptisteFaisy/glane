@@ -1,0 +1,1 @@
+{"id": 1, "name": "temp-chassis", "driver": "tm p", "bus": {"kind": "i2c", "dev": "/dev/i2c0", "addr": "0x48"}, "period_ms": 100, "unit": "C", "range": [-40.0, 125.0], "calib": {"kind": "poly", "coef": [0.0, 1.0]}, "thresholds": {"warn": 85.0, "crit": 105.0}, "deadline_ms": 150, "stale_after_ms": 500}

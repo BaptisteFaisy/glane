@@ -1,0 +1,1 @@
+{"id": 4, "name": "sim-ramp", "driver": "virtuel", "bus": {"kind": "virtuel"}, "period_ms": 100, "unit": "C", "range": [-40.0, 125.0], "deadline_ms": 150, "stale_after_ms": 500}

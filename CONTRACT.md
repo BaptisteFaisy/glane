@@ -52,10 +52,11 @@ toolchain QNX). Aucun terme de degré 3 ne déborde dans les bornes validées
 **Convention d'unités** : le polynôme mappe `x_milli` → `value_milli`. Le terme
 constant `a0` est donc en **milli-unités** (un décalage ajouté à la valeur en
 milli) ; `a1` est un **gain sans dimension** ; `a2`, `a3` ont les dimensions
-inverses correspondantes. Les kinds JSON `offset` et `gain` sont **normalisés
-par le parseur** (`desc.c`) en `poly` de degré 1 : `offset` → `[a0=offset_milli,
-a1=1.0]`, `gain` → `[a0=0, a1=gain]`. `calib.c` n'implémente donc que `NONE`
-(identité) et `POLY` (Horner).
+inverses correspondantes. Les kinds JSON acceptés sont **`none`** (identité) et
+**`poly`** (polynôme complet, `coef = [a0, a1, ...]`). Un décalage seul s'écrit
+`poly` avec `[offset_milli, 1.0]` ; un gain seul s'écrit `poly` avec `[0.0, gain]`.
+Tout autre kind est refusé (`GLANE_DESC_ECALIB`). `calib.c` n'implémente donc
+que `NONE` (identité) et `POLY` (Horner).
 
 ### 2.1 Bornes validées à l'analyse (`desc.c`)
 
@@ -107,7 +108,7 @@ dichotomiquement le premier désaccord.
 
 `bus.kind` ∈ `i2c|spi|gpio|file|virtuel`. `range` est un tableau de 2 nombres
 (min ≤ max). Les flottants sont parsés en **milli-entiers** avec arrondi au
-plus proche (`125.0` → `125000`). `calib.kind` ∈ `none|offset|poly` ;
+plus proche (`125.0` → `125000`). `calib.kind` ∈ `none|poly` ;
 `calib.coef` est un tableau de 1 à 4 nombres (longueur = deg+1).
 
 **Toute description invalide est refusée avec un message précis** : champ,

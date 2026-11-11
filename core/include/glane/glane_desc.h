@@ -3,10 +3,10 @@
  *
  * glane_desc.h — description déclarative d'un capteur (GLA-02, §5.2).
  *
- * Une description est un schéma JSON `sensors.d/*.json`. `glane_desc_parse`
- * analyse une chaîne JSON (aucune allocation : tout tient dans les tampons
- * fournis par l'appelant) et remplit un `glane_desc` + un `glane_desc_error`
- * précis (champ, ligne, cause) en cas d'erreur.
+ * Une description est un schéma JSON (fichiers `sensors.d/<nom>.json`).
+ * `glane_desc_parse` analyse une chaîne JSON (aucune allocation : tout tient
+ * dans les tampons fournis par l'appelant) et remplit un `glane_desc` + un
+ * `glane_desc_error` précis (champ, ligne, cause) en cas d'erreur.
  */
 #ifndef GLANE_DESC_H
 #define GLANE_DESC_H

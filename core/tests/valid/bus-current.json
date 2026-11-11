@@ -1,0 +1,1 @@
+{"id": 3, "name": "bus-current", "driver": "ina", "bus": {"kind": "i2c", "dev": "/dev/i2c1", "addr": "0x40"}, "period_ms": 50, "unit": "mA", "range": [-3200.0, 3200.0], "calib": {"kind": "poly", "coef": [0.0, 1.0]}, "thresholds": {"warn": 2000.0, "crit": 3000.0}, "deadline_ms": 75, "stale_after_ms": 200}
