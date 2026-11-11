@@ -49,6 +49,14 @@ extension de-facto supportée par gcc/clang sur x86-64 et aarch64 — donc par l
 toolchain QNX). Aucun terme de degré 3 ne déborde dans les bornes validées
 (voir §2.1).
 
+**Convention d'unités** : le polynôme mappe `x_milli` → `value_milli`. Le terme
+constant `a0` est donc en **milli-unités** (un décalage ajouté à la valeur en
+milli) ; `a1` est un **gain sans dimension** ; `a2`, `a3` ont les dimensions
+inverses correspondantes. Les kinds JSON `offset` et `gain` sont **normalisés
+par le parseur** (`desc.c`) en `poly` de degré 1 : `offset` → `[a0=offset_milli,
+a1=1.0]`, `gain` → `[a0=0, a1=gain]`. `calib.c` n'implémente donc que `NONE`
+(identité) et `POLY` (Horner).
+
 ### 2.1 Bornes validées à l'analyse (`desc.c`)
 
 Pour que le produit `|coef[3]| * |x|³` reste sous 2⁶² bits dans un int64
