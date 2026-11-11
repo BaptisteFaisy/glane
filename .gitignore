@@ -1,0 +1,22 @@
+# Build
+*.o
+*.a
+*.so
+core/tests/test_*
+!core/tests/*.c
+!core/tests/*.h
+build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store

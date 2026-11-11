@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Garde de taille (GLA-11)
+        run: python3 scripts/sizecheck.py
+
+      - name: Build + tests (C11 strict, -Werror)
+        run: make test
+
+      - name: Passe ASan/UBSan
+        run: make asan
