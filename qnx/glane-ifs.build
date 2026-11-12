@@ -41,6 +41,13 @@
     echo "--- abonne (gwatch) relit imu-accel et alarme si > 3000 ---"
     gwatch /dev/shmem/imu-accel.value 3000 6
     echo
+    echo "--- gestionnaire de ressources /dev/sensors (resmgr QNX) ---"
+    gsensor_resmgr temp-chassis /dev/shmem/temp-chassis.value
+    sleep 1
+    ls -l /dev/sensors
+    echo -n "cat /dev/sensors/temp-chassis -> "
+    cat /dev/sensors/temp-chassis
+    echo
     echo "=============================================================="
     echo " Voici un vrai systeme QNX : shell ksh interactif."
     echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
@@ -56,6 +63,7 @@ ls = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ls
 cat = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/cat
 tail = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/tail
 mkdir = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/mkdir
+sleep = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sleep
 pidin = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/pidin
 ksh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ksh
 sh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sh
@@ -63,6 +71,7 @@ temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.js
 imu-accel.json = /home/baptiste/Bureau/glane/core/tests/valid/imu-accel.json
 batt-voltage.json = /home/baptiste/Bureau/glane/core/tests/valid/batt-voltage.json
 gwatch = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gwatch
+gsensor_resmgr = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gsensor_resmgr
 
 ldqnx-64.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/ldqnx-64.so.2
 libc.so.6 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libc.so.6

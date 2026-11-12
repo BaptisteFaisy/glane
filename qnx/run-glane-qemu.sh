@@ -38,11 +38,13 @@ qcc -V gcc_ntox86_64 -std=c11 -O2 \
     "$ROOT/tools/qnxproof.c" -o "$OUT/ifsbin/usr/bin/qnxproof"
 qcc -V gcc_ntox86_64 -std=c11 -O2 \
     "$ROOT/target/gwatch.c" -o "$OUT/ifsbin/usr/bin/gwatch"
+qcc -V gcc_ntox86_64 -std=c11 -O2 \
+    "$ROOT/target/gsensor_resmgr.c" -o "$OUT/ifsbin/usr/bin/gsensor_resmgr"
 # l'interpréteur doit être trouvable par mkifs relativement au binaire
 cp "$TGT/usr/lib/ldqnx-64.so.2" "$OUT/ifsbin/usr/lib/"
 # Outils : toybox dispatche sur argv[0] -> une copie par nom d'appel.
 # (mkifs refuse le mélange 'nom = chemin' et [type=link].)
-for t in echo uname ls cat tail mkdir; do
+for t in echo uname ls cat tail mkdir sleep; do
     [ -f "$TGT/usr/bin/toybox" ] && cp "$TGT/usr/bin/toybox" "$OUT/ifsbin/usr/bin/$t"
 done
 for t in ksh sh; do
