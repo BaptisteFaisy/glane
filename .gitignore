@@ -6,6 +6,7 @@ core/tests/test_*
 !core/tests/*.c
 !core/tests/*.h
 build/
+build-asan/
 
 # Python
 __pycache__/

@@ -121,6 +121,14 @@ static void test_parse_coef(void)
     CHECK_EQ_I(v, 1000);
     CHECK_EQ_I(glane_calib_parse_coef("1E2", &v), 0);
     CHECK_EQ_I(v, 100000000);
+    /* Arrondi demi-à-l'infini sur les décimales au-delà de 1e-6 (branche
+     * total < 0 de scale_decimal) — tue le mutant « troncature ». */
+    CHECK_EQ_I(glane_calib_parse_coef("0.0000005", &v), 0);
+    CHECK_EQ_I(v, 1);    /* 0.5 -> 1 */
+    CHECK_EQ_I(glane_calib_parse_coef("0.0000004", &v), 0);
+    CHECK_EQ_I(v, 0);    /* 0.4 -> 0 */
+    CHECK_EQ_I(glane_calib_parse_coef("-0.0000005", &v), 0);
+    CHECK_EQ_I(v, -1);   /* -0.5 -> -1 (demi à l'infini) */
     /* Erreurs attendues. */
     CHECK(glane_calib_parse_coef("", &v) != 0);
     CHECK(glane_calib_parse_coef("abc", &v) != 0);

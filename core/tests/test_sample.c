@@ -58,13 +58,16 @@ static void test_emit_seq_monotone(void)
     }
     /* Retour en arrière de l'horodatage : refusé, seq inchangé. */
     uint32_t seq_before = s.seq;
-    int rc = glane_sample_emit(&s, 999, ts - 1000);
+    int64_t same_ts = s.ts_ns;
+    int rc = glane_sample_emit(&s, 999, same_ts - 1000);
     CHECK_EQ_I(rc, -1);
     CHECK_EQ_I(s.seq, seq_before);
-    /* ts identique (égalité) : accepté, seq avance quand même. */
-    rc = glane_sample_emit(&s, 1, ts);
+    /* ts IDENTIQUE à la mesure courante : accepté (monotonie large, pas
+     * stricte) et seq avance. Garde la valeur exacte de ts_ns courante. */
+    rc = glane_sample_emit(&s, 1, same_ts);
     CHECK_EQ_I(rc, 0);
     CHECK_EQ_I(s.seq, seq_before + 1);
+    CHECK_EQ_I(s.ts_ns, same_ts);
 }
 
 static void test_flags(void)

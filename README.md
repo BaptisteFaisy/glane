@@ -18,41 +18,77 @@ API de rédaction de publisher documentée, aucune simulation sans matériel, au
 validateur de conformité, aucune mesure de latence. Glane fournit ce qui manque
 pour s'en servir.
 
-## État
+## Documents
 
-- **Cahier des charges** : [`docs/GLANE-cahier-des-charges.md`](docs/GLANE-cahier-des-charges.md)
-  (24 exigences GLA-01 à GLA-24, 4 essais de faisabilité, 9 lots délégables).
+- **Cahier des charges** : [`docs/GLANE-cahier-des-charges.md`](docs/GLANE-cahier-des-charges.md) (24 exigences GLA-01..24).
 - **État et plan de poussée** : [`docs/GLANE-etat-et-poussee.md`](docs/GLANE-etat-et-poussee.md).
-- **Contrat gelé** : [`CONTRACT.md`](CONTRACT.md) — l'ABI de la mesure, la
-  calibration entière, le format de description, le schéma publié.
+- **100 idées pour aller plus loin** : [`docs/GLANE-100-idees-aller-plus-loin.md`](docs/GLANE-100-idees-aller-plus-loin.md).
+- **Matrice de traçabilité** : [`docs/GLANE-traceabilite.md`](docs/GLANE-traceabilite.md) (générée par `glane-trace`).
+- **Contrat gelé** : [`CONTRACT.md`](CONTRACT.md) — ABI de la mesure, calibration entière, schéma publié, journal.
 
 ## Socle portable `core/`
 
 C11 strict, pur (ni horloge, ni fichier, ni socket, ni `malloc`, ni état global),
-compilable et testable sur Linux avec :
-
-```
-gcc -std=c11 -O2 -Wall -Wextra -Werror
-```
+compilable et testable sur Linux avec `gcc -std=c11 -O2 -Wall -Wextra -Werror`.
 
 ```
 core/
 ├── include/glane/   glane_sample.h glane_calib.h glane_desc.h glane_bus.h
 │                    glane_ring.h glane_deadline.h glane_schema.h
-├── src/             sample.c calib.c (desc.c ring.c deadline.c schema.c à venir)
-└── tests/           test_*.c + test_util.h + faulty/ (banque de cas fautifs)
+│                    glane_virtuel.h glane_saturate.h glane_selftest.h
+│                    glane_jsonscan.h
+├── src/             sample.c calib.c ring.c deadline.c schema.c
+│                    desc.c desc_validate.c jsonscan.c
+│                    virtuel.c saturate.c selftest.c
+└── tests/           test_*.c + test_util.h + faulty/ (40 cas) + valid/
 ```
 
-### Construire et tester
+## Outils
+
+| Outil | Langage | Rôle |
+|---|---|---|
+| `build/glaned-sim` | C (hôte) | publisher virtuel : desc → mesures synthétiques déterministes → journal |
+| `build/calib_dump` | C (hôte) | dump de `glane_calib_apply` pour le test différentiel C↔Python |
+| `host/gschema.py` | Python | validateur de conformité de l'arborescence publiée (GLA-08) |
+| `host/glat.py` | Python | banc de latence p50/p99/p99.9 depuis un journal (GLA-09) |
+| `host/greport.py` | Python | rapport HTML autonome d'une campagne de mesures |
+| `host/gcanon.py` | Python | canonicalisation JSON + empreinte SHA-256 stable |
+| `host/glane_twin.py` | Python | jumeau de la calibration entière (test différentiel, GLA-05) |
+| `scripts/glane_mutate.py` | Python | test de mutation du socle C (≥ 8 mutants, tous tués) |
+| `scripts/glane_trace.py` | Python | matrice de traçabilité GLA-01..24 |
+| `scripts/sizecheck.py` | Python | garde de taille (< 500 lignes/fichier, < 50/fonction) |
+
+## Construire et tester
 
 ```sh
-make            # bibliothèque statique + binaires de test
-make test       # exécute tous les tests, verdict "OK <n> checks" par binaire
-make asan       # même chose sous AddressSanitizer + UndefinedBehaviorSanitizer
-make sizecheck  # garde : < 500 lignes/fichier, < 50 lignes/fonction
+make            # bibliothèque statique + binaires de test + outils hôte
+make test       # tests C — verdict "OK <n> checks" par binaire
+make host-test  # tests hôte Python (unittest) : jumeau, différentiel, gschema, glat, greport, gcanon, trace
+make asan       # tests C sous AddressSanitizer + UndefinedBehaviorSanitizer
+make sizecheck  # garde de taille
+python3 scripts/glane_mutate.py   # test de mutation (tous les mutants doivent être tués)
+python3 scripts/glane_trace.py     # matrice de traçabilité (Markdown)
 ```
 
-Chaque binaire de test rend 0 et imprime `OK <n> checks` en fin de parcours.
+### Démo express (publisher virtuel → latence → rapport)
+
+```sh
+make all
+./build/glaned-sim core/tests/valid/temp-chassis.json 2000 sine 42 1500000 /tmp/j.jsonl
+python3 host/glat.py /tmp/j.jsonl                 # p50/p99/p99.9 de latence
+python3 host/greport.py /tmp/j.jsonl /tmp/rapport.html
+```
+
+Deux exécutions de `glaned-sim` avec les mêmes paramètres produisent le même
+journal **octet pour octet** (rejeu déterministe, GLA-04).
+
+## État des vérifications
+
+- Tests C : **973 vérifications** (sample, calib, ring, deadline, schema, desc, virtuel, saturate, selftest), ASan/UBSan vert.
+- Test différentiel C↔Python : **10 000 valeurs** de calibration, graine fixe, zéro divergence.
+- Test de mutation : **10/10 mutants tués**.
+- Banque de descriptions fautives : **40 cas**, chacun produisant le code d'erreur attendu.
+- Garde de taille : verte (< 500 lignes/fichier, < 50 lignes/fonction).
 
 ## Licence
 

@@ -141,14 +141,24 @@ plus `command/{period,calibrate,inject,selftest}`.
 
 ## 7. Journal de mesures
 
-Une ligne JSON par mesure, ASCII, flottants en `%.6g` :
+Une ligne JSON par mesure, ASCII, entiers (les valeurs sont en milli-unités,
+jamais de flottant dans le journal) :
 
 ```
-{"s":"temp-chassis","id":1,"seq":4182,"ts_ns":18423390122,"v_m":43125,"u":"C","q":"ok","f":"calibrated"}
+{"s":"temp-chassis","id":1,"seq":4182,"ts_ns":18423390122,"d_ns":18424390122,"v_m":43125,"u":"C","q":"ok","f":"calibrated|simulated"}
 ```
 
-Le publisher virtuel **rejoue un scénario de fichier de façon déterministe** :
-deux exécutions donnent le même journal octet pour octet (graine fixe).
+- `ts_ns` : horodatage **à la source** (CLOCK_MONOTONIC).
+- `d_ns` : horodatage de **livraison** à l'abonné. La latence d'une mesure est
+  `d_ns - ts_ns` ; c'est ce que mesure `glat` (GLA-09). Champ optionnel : un
+  journal sans `d_ns` reste valide, `glat` ignore alors ces lignes.
+- `f` : drapeaux concaténés par `|` (`first`, `calibrated`, `injected`,
+  `simulated`), ou `-` si aucun.
+- `q` : qualité (`ok`, `stale`, `saturated`, `fault`, `uncertain`).
+
+Le publisher virtuel (`tools/glaned-sim`) **rejoue un scénario de façon
+déterministe** : deux exécutions avec les mêmes paramètres (description, forme
+d'onde, graine, latence) donnent le même journal **octet pour octet** (GLA-04).
 
 ## 8. Ce qui est gelé, ce qui reste ouvert
 

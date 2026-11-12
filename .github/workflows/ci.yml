@@ -22,8 +22,28 @@ jobs:
       - name: Garde de taille (GLA-11)
         run: python3 scripts/sizecheck.py
 
-      - name: Build + tests (C11 strict, -Werror)
+      - name: Build + tests C (C11 strict, -Werror)
         run: make test
 
       - name: Passe ASan/UBSan
         run: make asan
+
+      - name: Test de mutation (tous les mutants doivent être tués)
+        run: python3 scripts/glane_mutate.py
+
+  host-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build socle + outils hôte
+        run: make all
+
+      - name: Tests hôte Python (jumeau, différentiel C↔Python, gschema, glat, greport, gcanon, trace)
+        run: make host-test
+
+      - name: Matrice de traçabilité GLA
+        run: python3 scripts/glane_trace.py --json > /tmp/trace.json && echo "traçabilité générée"
