@@ -85,6 +85,7 @@
   <div class="demo-grid">
     <div class="panel controls">
       <h3>Capteur</h3>
+      <label>Nom <input id="d-name" type="text" value="demo"></label>
       <label>Forme d'onde
         <select id="d-wf">
           <option value="0">constante</option>
@@ -120,7 +121,9 @@
       <label>Gigue (ns, démo) <input id="d-jit" type="number" value="0"></label>
       <label>Stale après (ms) <input id="d-stale" type="number" value="500"></label>
       <button id="d-run" type="button">Rejouer</button>
+      <button id="d-preset" type="button" class="ghost">Charger temp-chassis (réel)</button>
       <button id="d-reset" type="button" class="ghost">Réinitialiser</button>
+      <p class="small" id="d-preset-note"></p>
     </div>
 
     <div class="panel">

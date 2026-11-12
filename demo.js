@@ -118,13 +118,17 @@
       var age = BigInt(cfg.latency + jit);
       var dn = ts + age;
       if (q === 0 && age > staleNs) q = 1;          /* STALE */
-      var flags = "simulated" + (step === 0 ? "|first" : "") + (calibOn ? "|calibrated" : "");
+      var parts = [];
+      if (step === 0) parts.push("first");
+      if (calibOn) parts.push("calibrated");
+      parts.push("simulated");
+      var flags = parts.join("|");
       s = { seq: step + 1, ts: ts, dn: dn, v: val, q: q, f: flags };
       samples.push(s);
       ages.push(Number(age));
-      lines.push('{"s":"demo","id":1,"seq":' + s.seq + ',"ts_ns":' + ts +
-        ',"d_ns":' + dn + ',"v_m":' + val + ',"u":"C","q":"' + QNAME[q] +
-        '","f":"' + flags + '"}');
+      lines.push('{"s":"' + (cfg.name || "demo") + '","id":1,"seq":' + s.seq +
+        ',"ts_ns":' + ts + ',"d_ns":' + dn + ',"v_m":' + val + ',"u":"C","q":"' +
+        QNAME[q] + '","f":"' + flags + '"}');
     }
     var journal = lines.join("\n");
     return { samples: samples, journal: journal, fp: fnv1a(journal), ages: ages };
@@ -218,6 +222,7 @@
       for (deg = 3; deg > 0 && coef[deg] === 0n; deg--) { /* deg = dernier non nul */ }
     }
     return {
+      name: $("d-name").value || "demo",
       wf: parseInt($("d-wf").value, 10),
       seed: parseInt($("d-seed").value, 10) || 0,
       base: parseInt($("d-base").value, 10) || 0,
@@ -246,7 +251,7 @@
   }
 
   function init() {
-    var ids = ["d-wf", "d-seed", "d-base", "d-amp", "d-period", "d-drift",
+    var ids = ["d-name", "d-wf", "d-seed", "d-base", "d-amp", "d-period", "d-drift",
       "d-satmin", "d-satmax", "d-steps", "d-calib", "d-c0", "d-c1", "d-c2",
       "d-c3", "d-lat", "d-jit", "d-stale"];
     ids.forEach(function (id) {
@@ -255,22 +260,39 @@
     });
     $("d-run").addEventListener("click", run);
     $("d-again").addEventListener("click", run);
+    $("d-preset").addEventListener("click", function () {
+      $("d-name").value = "temp-chassis";
+      $("d-wf").value = "1"; $("d-seed").value = 42; $("d-base").value = 42500;
+      $("d-amp").value = 41250; $("d-period").value = 64; $("d-drift").value = 0;
+      $("d-satmin").value = -40000; $("d-satmax").value = 125000;
+      $("d-steps").value = 180; $("d-calib").value = "poly";
+      $("d-c0").value = 0; $("d-c1").value = 1000000; $("d-c2").value = 0;
+      $("d-c3").value = 0; $("d-lat").value = 1500000; $("d-jit").value = 0;
+      $("d-stale").value = 500; lastFp = null; run();
+      $("d-preset-note").innerHTML =
+        "Paramètres de <code>core/tests/valid/temp-chassis.json</code> " +
+        "(base 42500, amp 41250, calib poly a1=1.0). Première mesure : " +
+        "<b>42500</b> — identique à la sortie réelle de <code>glaned-sim</code>.";
+    });
     $("d-reset").addEventListener("click", function () {
+      $("d-name").value = "demo";
       $("d-wf").value = "1"; $("d-seed").value = 42; $("d-base").value = 20000;
       $("d-amp").value = 10000; $("d-period").value = 64; $("d-drift").value = 0;
       $("d-satmin").value = -40000; $("d-satmax").value = 125000;
       $("d-steps").value = 180; $("d-calib").value = "none";
       $("d-c0").value = 0; $("d-c1").value = 1000000; $("d-c2").value = 0;
       $("d-c3").value = 0; $("d-lat").value = 1500000; $("d-jit").value = 0;
-      $("d-stale").value = 500; lastFp = null; run();
+      $("d-stale").value = 500; lastFp = null; $("d-preset-note").textContent = ""; run();
     });
     run();
   }
+
+  window.GLANE_DEMO = { simulate: simulate, calibApply: calibApply, wave: wave,
+                        hashNoise: hashNoise, percentile: percentile, fnv1a: fnv1a };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
-  window.GLANE_DEMO = { simulate: simulate, calibApply: calibApply, wave: wave };
 })();
