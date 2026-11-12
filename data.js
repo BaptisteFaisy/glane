@@ -19,7 +19,7 @@ window.GLANE_DATA = {
   "seed": 20261112
  },
  "sizecheck": {
-  "files": 37,
+  "files": 38,
   "ok": true
  },
  "mutation": {
@@ -3728,9 +3728,31 @@ window.GLANE_DATA = {
  "faulty_bank": 40,
  "qnx": {
   "build_proof": "# Preuve de compilation QNX 8.0 — glaned (Générée le 2026-11-12 14:36:13 CET)\n\n## Hôte\nLinux 6.14.0-37-generic x86_64 GNU/Linux\n\n## Toolchain QNX (SDP 8.0)\nQNX_HOST=/home/baptiste/qnx800/host/linux/x86_64\nQNX_TARGET=/home/baptiste/qnx800/target/qnx\nToolchain:  gcc\tVersion:  12.2.0\t\n\nVariante cible: gcc_ntox86_64 (x86_64, pour QEMU)\n\n## Commande de compilation\nqcc -V gcc_ntox86_64 -std=c11 -O2 -Wall -Wextra -Icore/include -Ipublish/qnx \\\n    target/glaned.c publish/qnx/glane_publish.c core/src/*.c -o build-qnx/glaned\n\n## Résultat\nexit=0 — AUCUN warning (-Wall -Wextra)\n\n## Binaire produit\n32976 octets  build-qnx/glaned\n ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /usr/lib/ldqnx-64.so.2, BuildID[md5/uuid]=775913e9845c332f9bb84118e9ea53f3, with debug_info, not stripped\n\n## Fichiers source compilés pour QNX (socle core/ C11 pur + glaned + couche publication)\n  core/src/calib.c\n  core/src/deadline.c\n  core/src/desc.c\n  core/src/desc_validate.c\n  core/src/jsonscan.c\n  core/src/ring.c\n  core/src/sample.c\n  core/src/saturate.c\n  core/src/schema.c\n  core/src/selftest.c\n  core/src/virtuel.c\n  publish/qnx/glane_publish.c\n  target/glaned.c\n",
-  "runtime": null,
+  "runtime": {
+   "uname": "[QNX-PROOF] sysname=QNX release=8.0.0 version=2026/06/05-16:26:03EDT machine=x86pc node=localhost\n[QNX-PROOF] sysname=QNX release=8.0.0 version=2026/06/05-16:26:03EDT machine=x86pc node=localhost\n[QNX-PROOF] sysname=QNX release=8.0.0 version=2026/06/05-16:26:03EDT machine=x86pc node=localhost\n[QNX-PROOF] sysname=QNX release=8.0.0 version=2026/06/05-16:26:03EDT machine=x86pc node=localhost\n",
+   "glaned": "{\"s\":\"temp-chassis\",\"seq\":1,\"ts_ns\":0,\"v_m\":42500,\"q\":0,\"f\":11}\n{\"s\":\"temp-chassis\",\"seq\":2,\"ts_ns\":100000000,\"v_m\":46543,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":3,\"ts_ns\":200000000,\"v_m\":50548,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":4,\"ts_ns\":300000000,\"v_m\":54474,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":5,\"ts_ns\":400000000,\"v_m\":58285,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":6,\"ts_ns\":500000000,\"v_m\":61944,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":7,\"ts_ns\":600000000,\"v_m\":65416,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":8,\"ts_ns\":700000000,\"v_m\":68668,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":9,\"ts_ns\":800000000,\"v_m\":71668,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":10,\"ts_ns\":900000000,\"v_m\":74386,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":11,\"ts_ns\":1000000000,\"v_m\":76798,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":12,\"ts_ns\":1100000000,\"v_m\":78879,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":13,\"ts_ns\":1200000000,\"v_m\":80610,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":14,\"ts_ns\":1300000000,\"v_m\":81973,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":15,\"ts_ns\":1400000000,\"v_m\":82956,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":16,\"ts_ns\":1500000000,\"v_m\":83551,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":17,\"ts_ns\":1600000000,\"v_m\":83750,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":18,\"ts_ns\":1700000000,\"v_m\":83551,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":19,\"ts_ns\":1800000000,\"v_m\":82956,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":20,\"ts_ns\":1900000000,\"v_m\":81973,\"q\":0,\"f\":10}\nglaned: 20 mesures publiées pour 'temp-chassis'\n{\"s\":\"temp-chassis\",\"seq\":1,\"ts_ns\":0,\"v_m\":42500,\"q\":0,\"f\":11}\n{\"s\":\"temp-chassis\",\"seq\":2,\"ts_ns\":100000000,\"v_m\":46543,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":3,\"ts_ns\":200000000,\"v_m\":50548,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":4,\"ts_ns\":300000000,\"v_m\":54474,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":5,\"ts_ns\":400000000,\"v_m\":58285,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":6,\"ts_ns\":500000000,\"v_m\":61944,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":7,\"ts_ns\":600000000,\"v_m\":65416,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":8,\"ts_ns\":700000000,\"v_m\":68668,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":9,\"ts_ns\":800000000,\"v_m\":71668,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":10,\"ts_ns\":900000000,\"v_m\":74386,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":11,\"ts_ns\":1000000000,\"v_m\":76798,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":12,\"ts_ns\":1100000000,\"v_m\":78879,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":13,\"ts_ns\":1200000000,\"v_m\":80610,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":14,\"ts_ns\":1300000000,\"v_m\":81973,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":15,\"ts_ns\":1400000000,\"v_m\":82956,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":16,\"ts_ns\":1500000000,\"v_m\":83551,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":17,\"ts_ns\":1600000000,\"v_m\":83750,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":18,\"ts_ns\":1700000000,\"v_m\":83551,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":19,\"ts_ns\":1800000000,\"v_m\":82956,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":20,\"ts_ns\":1900000000,\"v_m\":81973,\"q\":0,\"f\":10}\nglaned: 20 mesures publiées pour 'temp-chassis'\n",
+   "howto": "# Capture d'exécution Glane sur QNX 8.0 (émulateur)\n\nDate : 2026-11-12 16:41:36 CET\nHôte : Linux 6.14.0-37-generic x86_64 GNU/Linux\nOutil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`\n\n## Image amorcée\n```\nqemu-system-x86_64 -kernel build-qnx/glane-ifs.bin -m 512 -smp 1 -cpu max \\\n  -display none -vga none -serial file:build-qnx/qnx-console.log -no-reboot\n```\nIFS minimale (2,3 Mo, sans disque) construite par `qnx/glane-ifs.build` :\nprocnto-smp-instr + startup-x86 (console série 115200) + glaned + qnxproof.\n\n## Preuve d'OS (uname exécuté DANS l'invité)\n```\n[QNX-PROOF] sysname=QNX release=8.0.0 version=2026/06/05-16:26:03EDT machine=x86pc node=localhost\n```\n\n## Journal produit par glaned DANS QNX 8.0\n```\n{\"s\":\"temp-chassis\",\"seq\":1,\"ts_ns\":0,\"v_m\":42500,\"q\":0,\"f\":11}\n{\"s\":\"temp-chassis\",\"seq\":2,\"ts_ns\":100000000,\"v_m\":46543,\"q\":0,\"f\":10}\n{\"s\":\"temp-chassis\",\"seq\":3,\"ts_ns\":200000000,\"v_m\":50548,\"q\":0,\"f\":10}\n…\n```\n\n## Rejeu déterministe (GLA-04)\nDeux exécutions de `glaned` avec la même graine (42) dans le même QNX :\n**IDENTIQUES octet pour octet (rejeu déterministe confirmé sur QNX 8.0)** — 40 lignes de mesure au total.\n\n## Rejouer\n```sh\nqnx/run-glane-qemu.sh      # compile, construit l'IFS, amorce, capture\n```\n",
+   "journal_head": [
+    "{\"s\":\"temp-chassis\",\"seq\":1,\"ts_ns\":0,\"v_m\":42500,\"q\":0,\"f\":11}",
+    "{\"s\":\"temp-chassis\",\"seq\":2,\"ts_ns\":100000000,\"v_m\":46543,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":3,\"ts_ns\":200000000,\"v_m\":50548,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":4,\"ts_ns\":300000000,\"v_m\":54474,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":5,\"ts_ns\":400000000,\"v_m\":58285,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":6,\"ts_ns\":500000000,\"v_m\":61944,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":7,\"ts_ns\":600000000,\"v_m\":65416,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":8,\"ts_ns\":700000000,\"v_m\":68668,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":9,\"ts_ns\":800000000,\"v_m\":71668,\"q\":0,\"f\":10}",
+    "{\"s\":\"temp-chassis\",\"seq\":10,\"ts_ns\":900000000,\"v_m\":74386,\"q\":0,\"f\":10}"
+   ],
+   "journal_count": 20,
+   "stats": {
+    "count": 0,
+    "seq_gaps": {},
+    "total_losses": 0
+   }
+  },
   "screenshots": []
  },
  "checks_total": 973,
- "generated": "2026-11-12 14:41"
+ "generated": "2026-11-12 16:42"
 };

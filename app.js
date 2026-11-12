@@ -325,6 +325,10 @@
       h += "<p class='small'>Extrait du journal QNX :</p><pre class='journal'>" +
         esc(rt.journal_head.join("\n")) + "</pre>";
     }
+    if (rt.howto) {
+      h += "<h3>Comment c'est produit <span class='hint'>(reproductible)</span></h3>" +
+        "<pre class='code'>" + esc(rt.howto) + "</pre>";
+    }
     if (q.screenshots && q.screenshots.length) {
       h += "<h3>Console QNX</h3>" + q.screenshots.map(function (f) {
         return "<img src='capture/" + esc(f) + "' alt='console QNX' style='max-width:100%;border:1px solid var(--line);border-radius:8px'>";
