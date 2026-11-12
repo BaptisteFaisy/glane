@@ -19,7 +19,7 @@ window.GLANE_DATA = {
   "seed": 20261112
  },
  "sizecheck": {
-  "files": 34,
+  "files": 37,
   "ok": true
  },
  "mutation": {
@@ -3726,6 +3726,11 @@ window.GLANE_DATA = {
   }
  ],
  "faulty_bank": 40,
+ "qnx": {
+  "build_proof": "# Preuve de compilation QNX 8.0 — glaned (Générée le 2026-11-12 14:36:13 CET)\n\n## Hôte\nLinux 6.14.0-37-generic x86_64 GNU/Linux\n\n## Toolchain QNX (SDP 8.0)\nQNX_HOST=/home/baptiste/qnx800/host/linux/x86_64\nQNX_TARGET=/home/baptiste/qnx800/target/qnx\nToolchain:  gcc\tVersion:  12.2.0\t\n\nVariante cible: gcc_ntox86_64 (x86_64, pour QEMU)\n\n## Commande de compilation\nqcc -V gcc_ntox86_64 -std=c11 -O2 -Wall -Wextra -Icore/include -Ipublish/qnx \\\n    target/glaned.c publish/qnx/glane_publish.c core/src/*.c -o build-qnx/glaned\n\n## Résultat\nexit=0 — AUCUN warning (-Wall -Wextra)\n\n## Binaire produit\n32976 octets  build-qnx/glaned\n ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /usr/lib/ldqnx-64.so.2, BuildID[md5/uuid]=775913e9845c332f9bb84118e9ea53f3, with debug_info, not stripped\n\n## Fichiers source compilés pour QNX (socle core/ C11 pur + glaned + couche publication)\n  core/src/calib.c\n  core/src/deadline.c\n  core/src/desc.c\n  core/src/desc_validate.c\n  core/src/jsonscan.c\n  core/src/ring.c\n  core/src/sample.c\n  core/src/saturate.c\n  core/src/schema.c\n  core/src/selftest.c\n  core/src/virtuel.c\n  publish/qnx/glane_publish.c\n  target/glaned.c\n",
+  "runtime": null,
+  "screenshots": []
+ },
  "checks_total": 973,
- "generated": "2026-11-12 11:17"
+ "generated": "2026-11-12 14:41"
 };

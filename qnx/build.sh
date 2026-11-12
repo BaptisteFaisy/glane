@@ -20,8 +20,8 @@ fi
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 OUT="${1:-$ROOT/build-qnx/glaned}"
-# Variante de toolchain QNX 8.0 x86_64 (à ajuster selon `qcc -V` listé par le SDP).
-VARIANT="${QNX_VARIANT:-gcc_ntox86_64le}"
+# Variante de toolchain QNX 8.0 x86_64 (confirmée via `qcc -V` : gcc_ntox86_64).
+VARIANT="${QNX_VARIANT:-gcc_ntox86_64}"
 
 mkdir -p "$(dirname "$OUT")"
 echo "Compilation QNX (variante $VARIANT) -> $OUT"

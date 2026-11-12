@@ -1,0 +1,37 @@
+# Preuve de compilation QNX 8.0 — glaned (Générée le 2026-11-12 14:36:13 CET)
+
+## Hôte
+Linux 6.14.0-37-generic x86_64 GNU/Linux
+
+## Toolchain QNX (SDP 8.0)
+QNX_HOST=/home/baptiste/qnx800/host/linux/x86_64
+QNX_TARGET=/home/baptiste/qnx800/target/qnx
+Toolchain:  gcc	Version:  12.2.0	
+
+Variante cible: gcc_ntox86_64 (x86_64, pour QEMU)
+
+## Commande de compilation
+qcc -V gcc_ntox86_64 -std=c11 -O2 -Wall -Wextra -Icore/include -Ipublish/qnx \
+    target/glaned.c publish/qnx/glane_publish.c core/src/*.c -o build-qnx/glaned
+
+## Résultat
+exit=0 — AUCUN warning (-Wall -Wextra)
+
+## Binaire produit
+32976 octets  build-qnx/glaned
+ ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /usr/lib/ldqnx-64.so.2, BuildID[md5/uuid]=775913e9845c332f9bb84118e9ea53f3, with debug_info, not stripped
+
+## Fichiers source compilés pour QNX (socle core/ C11 pur + glaned + couche publication)
+  core/src/calib.c
+  core/src/deadline.c
+  core/src/desc.c
+  core/src/desc_validate.c
+  core/src/jsonscan.c
+  core/src/ring.c
+  core/src/sample.c
+  core/src/saturate.c
+  core/src/schema.c
+  core/src/selftest.c
+  core/src/virtuel.c
+  publish/qnx/glane_publish.c
+  target/glaned.c

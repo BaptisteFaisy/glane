@@ -278,6 +278,61 @@
     $("contract-journal").textContent = line;
   }
 
+  function renderQnx() {
+    var q = D.qnx || {};
+    var rt = q.runtime;
+    var status = [
+      ["compilation QNX 8.0", q.build_proof ? "✓ qcc gcc_ntox86_64" : "—"],
+      ["binaire", "ELF x86-64 · ldqnx-64.so.2"],
+      ["exécution dans l'émulateur", rt ? "✓ capturée" : "en attente"]
+    ];
+    $("qnx-status").innerHTML = status.map(function (x) {
+      return '<span class="tag"><b>' + esc(x[0]) + "</b> · " + esc(x[1]) + "</span>";
+    }).join("");
+    $("qnx-build-proof").textContent =
+      q.build_proof || "(preuve de compilation indisponible)";
+
+    if (!rt) {
+      $("qnx-runtime").innerHTML =
+        "<h3>Exécution sur QNX 8.0</h3><p class='small'>⏳ Capture en cours : une VM " +
+        "QSTI QNX 8.0 est pilotée sous QEMU en parallèle. Dès que les artefacts " +
+        "<code>qnx/capture/runtime-*</code> sont déposés (procédure dans " +
+        "<code>qnx/HANDOFF.md</code>), cette section affiche la sortie " +
+        "<strong>réelle</strong> : <code>uname</code> QNX 8.0 de l'invité, le journal " +
+        "produit par <code>glaned</code> dans l'émulateur, et ses latences " +
+        "<code>glat</code>. La compilation QNX ci-dessus est déjà effective.</p>";
+      return;
+    }
+    var h = "<h3>Exécution sur QNX 8.0 <span class='hint'>(capturée dans l'émulateur)</span></h3>";
+    if (rt.uname) {
+      h += "<p class='small'>Preuve d'OS (invité) :</p><pre class='code'>" + esc(rt.uname) + "</pre>";
+    }
+    if (rt.stats && rt.stats.count) {
+      var s = rt.stats;
+      h += "<p class='small'>Latence mesurée par <code>glat</code> sur le journal produit " +
+        "<strong>dans QNX</strong> (" + n(rt.journal_count || 0) + " mesures) :</p><div class='stats'>" +
+        [["p50", s.p50_ns], ["p99", s.p99_ns], ["p99.9", s.p99_9_ns],
+         ["max", s.max_ns], ["pertes", s.total_losses]].map(function (r) {
+          return '<div class="stat"><div class="k">' + r[0] + '</div><div class="v">' +
+            n(r[1]) + "</div></div>";
+        }).join("") + "</div>";
+    }
+    if (rt.glaned) {
+      h += "<p class='small'>Sortie de <code>glaned</code> dans l'invité :</p>" +
+        "<pre class='journal'>" + esc(rt.glaned.slice(0, 4000)) + "</pre>";
+    }
+    if (rt.journal_head && rt.journal_head.length) {
+      h += "<p class='small'>Extrait du journal QNX :</p><pre class='journal'>" +
+        esc(rt.journal_head.join("\n")) + "</pre>";
+    }
+    if (q.screenshots && q.screenshots.length) {
+      h += "<h3>Console QNX</h3>" + q.screenshots.map(function (f) {
+        return "<img src='capture/" + esc(f) + "' alt='console QNX' style='max-width:100%;border:1px solid var(--line);border-radius:8px'>";
+      }).join("");
+    }
+    $("qnx-runtime").innerHTML = h;
+  }
+
   function renderToolsUsage() {
     var cmd = [
       "make            # socle statique + 9 binaires de test + outils hôte",
@@ -316,7 +371,7 @@
   function init() {
     renderBadges(); renderHoles(); renderFeatures(); renderProofs();
     renderChecks(); renderJournals(); renderGlat(); renderMutation();
-    renderDiff(); renderRequirements(); renderTrace(); renderIdeas();
+    renderDiff(); renderQnx(); renderRequirements(); renderTrace(); renderIdeas();
     renderDocs(); renderContractJournal(); renderToolsUsage(); initNav();
   }
 
