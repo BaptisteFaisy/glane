@@ -1,0 +1,28 @@
+# Glane — fragment mkifs (template) pour une Custom Target Image (CTI)
+#
+# Copyright 2026 Baptiste Faisy. Licence Apache-2.0.
+#
+# À inclure dans le buildfile d'image mkifs (voir le « Custom Target Image (CTI)
+# Guide » de QNX Everywhere) pour embarquer glaned + les descriptions de capteurs
+# dans une image QNX amorçable sous QEMU ou sur Raspberry Pi 5.
+#
+# À VALIDER avec le SDP réel. Pour la démo, il est plus simple de compiler avec
+# qnx/build.sh puis de pousser glaned dans l'invité QSTI déjà amorcé (voir
+# qnx/README.md) plutôt que de reconstruire une image complète.
+
+include {
+    glaned
+    sensors.d
+}
+
+# Binaire du publisher dans /bin, lien dans /usr/bin.
+[type=link] /usr/bin/glaned = /bin/glaned
+
+# Descriptions de capteurs lues par glaned au démarrage.
+file /etc/sensors.d {
+    source_path = sensors.d
+}
+
+# Démarrage automatique du publisher (à placer dans le script d'init de l'image) :
+#   glaned /etc/sensors.d/temp-chassis.json 0 1 42 &
+# (0 = boucle infinie ; à superviser par HAM — voir GLA-14.)
