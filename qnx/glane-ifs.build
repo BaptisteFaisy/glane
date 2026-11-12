@@ -31,24 +31,19 @@
     echo "--- processus QNX vivants (pidin) ---"
     pidin -F "%n %a"
     echo
-    echo "--- glaned publie 20 mesures (run 1) ---"
-    GLANE_SENSOR_DIR=/dev/shmem glaned /proc/boot/temp-chassis.json 20 1 42
+    echo "--- glaned publie 3 capteurs (temp 100ms, imu 10ms, batterie 500ms) ---"
+    GLANE_SENSOR_DIR=/dev/shmem glaned 60 /proc/boot/temp-chassis.json /proc/boot/imu-accel.json /proc/boot/batt-voltage.json
     echo
     echo "--- objets publies (fichiers reels, ls) ---"
     ls -l /dev/shmem
-    echo "--- contenu reellement publie (info) ---"
-    cat /dev/shmem/temp-chassis.info
-    echo "--- run 2, MEME graine (doit etre identique) ---"
-    GLANE_SENSOR_DIR=/dev/shmem glaned /proc/boot/temp-chassis.json 20 1 42
-    cat /dev/shmem/temp-chassis.info
-    echo "--- value (3 dernieres mesures, en milli-C) ---"
-    tail -n 3 /dev/shmem/temp-chassis.value
-    echo "--- quality (derniere) ---"
-    tail -n 1 /dev/shmem/temp-chassis.quality
+    echo "--- mesures publiees (extrait imu-accel.info) ---"
+    tail -n 5 /dev/shmem/imu-accel.info
+    echo "--- abonne (gwatch) relit imu-accel et alarme si > 3000 ---"
+    gwatch /dev/shmem/imu-accel.value 3000 6
     echo
     echo "=============================================================="
     echo " Voici un vrai systeme QNX : shell ksh interactif."
-    echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.value"
+    echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
     echo "=============================================================="
     exec ksh -l
 }
@@ -65,6 +60,9 @@ pidin = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/pidin
 ksh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ksh
 sh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sh
 temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.json
+imu-accel.json = /home/baptiste/Bureau/glane/core/tests/valid/imu-accel.json
+batt-voltage.json = /home/baptiste/Bureau/glane/core/tests/valid/batt-voltage.json
+gwatch = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gwatch
 
 ldqnx-64.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/ldqnx-64.so.2
 libc.so.6 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libc.so.6

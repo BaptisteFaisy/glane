@@ -1,0 +1,5 @@
+{"id": 3, "name": "batt-voltage", "driver": "batt",
+ "bus": {"kind": "file", "dev": "/dev/shmem/fake-battery"},
+ "period_ms": 500, "unit": "V", "range": [2.8, 4.2],
+ "calib": {"kind": "poly", "coef": [0.0, 1.0]},
+ "deadline_ms": 750, "stale_after_ms": 2000}

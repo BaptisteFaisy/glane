@@ -1,6 +1,6 @@
 # Capture d'exécution Glane sur QNX 8.0 (émulateur)
 
-Date : 2026-11-12 21:34:06 CET
+Date : 2026-11-12 23:14:50 CET
 Hôte : Linux 6.14.0-37-generic x86_64 GNU/Linux
 Outil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`
 
@@ -19,15 +19,15 @@ procnto-smp-instr + startup-x86 (console série 115200) + glaned + qnxproof.
 
 ## Journal produit par glaned DANS QNX 8.0
 ```
-{"s":"temp-chassis","id":1,"seq":1,"ts_ns":0,"v_m":42500,"unit":"C","quality":"ok"}
-{"s":"temp-chassis","id":1,"seq":2,"ts_ns":100000000,"v_m":46543,"unit":"C","quality":"ok"}
-{"s":"temp-chassis","id":1,"seq":3,"ts_ns":200000000,"v_m":50548,"unit":"C","quality":"ok"}
+{"s":"imu-accel","id":2,"seq":56,"ts_ns":550000000,"v_m":5750,"unit":"g","quality":"ok"}
+{"s":"imu-accel","id":2,"seq":57,"ts_ns":560000000,"v_m":6000,"unit":"g","quality":"ok"}
+{"s":"imu-accel","id":2,"seq":58,"ts_ns":570000000,"v_m":6250,"unit":"g","quality":"ok"}
 …
 ```
 
 ## Rejeu déterministe (GLA-04)
 Deux exécutions de `glaned` avec la même graine (42) dans le même QNX :
-**IDENTIQUES octet pour octet (rejeu déterministe confirmé sur QNX 8.0)** — 40 lignes de mesure au total.
+**IDENTIQUES octet pour octet (rejeu déterministe confirmé sur QNX 8.0)** — 5 lignes de mesure au total.
 
 ## Rejouer
 ```sh

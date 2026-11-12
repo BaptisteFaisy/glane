@@ -14,10 +14,19 @@ CORE_SRC := $(wildcard core/src/*.c)
 CORE_OBJ := $(patsubst core/src/%.c,$(BUILD)/core/%.o,$(CORE_SRC))
 TEST_SRC := $(wildcard core/tests/test_*.c)
 TEST_BIN := $(patsubst core/tests/%.c,$(BUILD)/%,$(TEST_SRC))
-TOOLS_SRC := $(wildcard tools/*.c)
+TOOLS_SRC := $(filter-out tools/fuzz_desc.c,$(wildcard tools/*.c))
 TOOLS_BIN := $(patsubst tools/%.c,$(BUILD)/%,$(TOOLS_SRC))
 
-.PHONY: all test asan sizecheck host-test clean
+# Fuzz déterministe du parseur de description (GLA-17) : compile UNIQUEMENT les
+# .c nécessaires à desc (desc, desc_validate, jsonscan + leurs dépendances
+# calib/sample/schema), hors RNG de virtuel.c. Indépendant de libglane_core.a.
+FUZZ_SRC   := tools/fuzz_desc.c core/src/desc.c core/src/desc_validate.c \
+              core/src/jsonscan.c core/src/calib.c core/src/sample.c \
+              core/src/schema.c
+FUZZ_CFLAGS := -std=c11 -O1 -g -fsanitize=address,undefined \
+               -fno-omit-frame-pointer -Wall -Wextra -Werror
+
+.PHONY: all test asan sizecheck host-test clean fuzz
 all: $(BUILD)/libglane_core.a $(TEST_BIN) $(TOOLS_BIN)
 
 $(BUILD)/core/%.o: core/src/%.c
@@ -63,6 +72,13 @@ asan:
 
 sizecheck:
 	python3 scripts/sizecheck.py
+
+$(BUILD)/fuzz_desc: $(FUZZ_SRC)
+	@mkdir -p $(dir $@)
+	$(CC) $(FUZZ_CFLAGS) -Icore/include $(FUZZ_SRC) -o $@
+
+fuzz: $(BUILD)/fuzz_desc
+	./$(BUILD)/fuzz_desc 100000
 
 clean:
 	rm -rf $(BUILD) build-asan

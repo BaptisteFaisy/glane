@@ -36,6 +36,8 @@ qcc -V gcc_ntox86_64 -std=c11 -O2 \
     -o "$OUT/ifsbin/usr/bin/glaned"
 qcc -V gcc_ntox86_64 -std=c11 -O2 \
     "$ROOT/tools/qnxproof.c" -o "$OUT/ifsbin/usr/bin/qnxproof"
+qcc -V gcc_ntox86_64 -std=c11 -O2 \
+    "$ROOT/target/gwatch.c" -o "$OUT/ifsbin/usr/bin/gwatch"
 # l'interpréteur doit être trouvable par mkifs relativement au binaire
 cp "$TGT/usr/lib/ldqnx-64.so.2" "$OUT/ifsbin/usr/lib/"
 # Outils : toybox dispatche sur argv[0] -> une copie par nom d'appel.

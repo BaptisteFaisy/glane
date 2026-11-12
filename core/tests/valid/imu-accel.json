@@ -1,0 +1,5 @@
+{"id": 2, "name": "imu-accel", "driver": "imu",
+ "bus": {"kind": "spi", "dev": "/dev/spi0", "addr": "0x68"},
+ "period_ms": 10, "unit": "g", "range": [-16.0, 16.0],
+ "calib": {"kind": "poly", "coef": [0.0, 1.0]},
+ "deadline_ms": 15, "stale_after_ms": 50}

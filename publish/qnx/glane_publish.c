@@ -93,18 +93,19 @@ static void leaf_path(const glane_publisher *p, int i, char *buf, size_t bufsz)
  * publication fichier est en place, 0 sinon (racine suivante à essayer). */
 static int try_root(glane_publisher *p, const char *root)
 {
-    char dir[256];
-    snprintf(dir, sizeof dir, "%s/%s", root, p->desc->name);
+    char dir[512];
+    snprintf(dir, sizeof dir, "%.159s/%.63s", root, p->desc->name);
     /* Si l'arborescence n'est pas creatable (mkdir non implémenté sur
      * certains tmpfs QNX), on publie à plat dans la même racine. */
     p->flat = (mkdir_p(dir) != 0);
-    snprintf(p->root, sizeof p->root, "%s", root);
+    snprintf(p->root, sizeof p->root, "%.159s", root);
     if (!p->flat) {
-        snprintf(dir, sizeof dir, "%s/%s/command", p->root, p->desc->name);
+        snprintf(dir, sizeof dir, "%.159s/%.63s/command",
+                 p->root, p->desc->name);
         (void)mkdir_p(dir);
     }
     for (int i = 0; i < GLANE_PUBLISH_LEAVES; i++) {
-        char path[300];
+        char path[512];
         leaf_path(p, i, path, sizeof path);
         p->fds[i] = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (p->fds[i] < 0) {
@@ -133,7 +134,7 @@ int glane_publish_open(glane_publisher *p, const glane_desc *d)
     int nroots = 0;
     const char *env = getenv("GLANE_SENSOR_DIR");
     if (env != NULL && env[0] != '\0') {
-        snprintf(roots[nroots], sizeof roots[0], "%s", env);
+        snprintf(roots[nroots], sizeof roots[0], "%.159s", env);
         nroots++;
     }
     for (int i = 0; root_candidates[i] != NULL && nroots < 6; i++) {
