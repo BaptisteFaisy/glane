@@ -17,7 +17,7 @@
   }
   function n(x) { return Number(x).toLocaleString("fr-FR"); }
 
-  var REPO = "https://github.com/BaptisteFaisy/glane";
+  var REPO = "https://github.com/Tradoooo/glane";
 
   /* --------------------------- en-tête --------------------------- */
   function renderBadges() {
