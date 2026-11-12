@@ -1,6 +1,6 @@
 # Capture d'exécution Glane sur QNX 8.0 (émulateur)
 
-Date : 2026-11-12 23:37:55 CET
+Date : 2026-11-13 00:25:02 CET
 Hôte : Linux 6.14.0-37-generic x86_64 GNU/Linux
 Outil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`
 

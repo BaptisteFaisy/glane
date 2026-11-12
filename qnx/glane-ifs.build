@@ -48,6 +48,14 @@
     echo -n "cat /dev/sensors/temp-chassis -> "
     cat /dev/sensors/temp-chassis
     echo
+    echo "--- superviseur (HAM de poche) : on tue glaned, il est relance ---"
+    gsuper /proc/boot/glaned 99999 /proc/boot/temp-chassis.json
+    sleep 2
+    slay glaned
+    sleep 2
+    echo "--- glaned a ete tue puis relance par gsuper ---"
+    pidin -F "%n"
+    echo
     echo "=============================================================="
     echo " Voici un vrai systeme QNX : shell ksh interactif."
     echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
@@ -72,6 +80,8 @@ imu-accel.json = /home/baptiste/Bureau/glane/core/tests/valid/imu-accel.json
 batt-voltage.json = /home/baptiste/Bureau/glane/core/tests/valid/batt-voltage.json
 gwatch = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gwatch
 gsensor_resmgr = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gsensor_resmgr
+gsuper = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gsuper
+slay = /home/baptiste/qnx800/target/qnx/x86_64/bin/slay
 
 ldqnx-64.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/ldqnx-64.so.2
 libc.so.6 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libc.so.6

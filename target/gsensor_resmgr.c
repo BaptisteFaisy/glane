@@ -62,16 +62,24 @@ static long read_last_value(const char *path)
 
 static int my_read(resmgr_context_t *ctp, io_read_t *msg, RESMGR_OCB_T *ocb)
 {
-    (void)ocb;
     char buf[64];
     int len = snprintf(buf, sizeof buf, "%ld\n",
                        read_last_value(g_ctx.value_file));
-    size_t n = msg->i.nbytes;
-    if (n == 0 || n > (size_t)len) {
-        n = (size_t)len;
+    off_t off = ocb->offset;
+    size_t nleft = (size_t)((off < len) ? (len - off) : 0);
+    if (nleft == 0) {
+        /* fin de fichier : plus rien à lire */
+        _IO_SET_READ_NBYTES(ctp, 0);
+        msg->i.nbytes = 0;
+        return EOK;
     }
-    SETIOV(ctp->iov, buf, (int)n);
-    msg->i.nbytes = (int)n;
+    size_t n = msg->i.nbytes;
+    if (n > nleft) {
+        n = nleft;
+    }
+    SETIOV(ctp->iov, buf + off, (int)n);
+    ocb->offset = off + (off_t)n;
+    msg->i.nbytes = 0;
     _IO_SET_READ_NBYTES(ctp, n);
     return _RESMGR_NPARTS(1);
 }

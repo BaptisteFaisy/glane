@@ -40,6 +40,8 @@ qcc -V gcc_ntox86_64 -std=c11 -O2 \
     "$ROOT/target/gwatch.c" -o "$OUT/ifsbin/usr/bin/gwatch"
 qcc -V gcc_ntox86_64 -std=c11 -O2 \
     "$ROOT/target/gsensor_resmgr.c" -o "$OUT/ifsbin/usr/bin/gsensor_resmgr"
+qcc -V gcc_ntox86_64 -std=c11 -O2 \
+    "$ROOT/target/gsuper.c" -o "$OUT/ifsbin/usr/bin/gsuper"
 # l'interpréteur doit être trouvable par mkifs relativement au binaire
 cp "$TGT/usr/lib/ldqnx-64.so.2" "$OUT/ifsbin/usr/lib/"
 # Outils : toybox dispatche sur argv[0] -> une copie par nom d'appel.
