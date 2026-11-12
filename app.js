@@ -325,6 +325,11 @@
       h += "<p class='small'>Extrait du journal QNX :</p><pre class='journal'>" +
         esc(rt.journal_head.join("\n")) + "</pre>";
     }
+    if (rt.console) {
+      h += "<h3>Console QNX brute <span class='hint'>(capture de la session série)</span></h3>" +
+        "<div class='terminal'><div class='terminal-bar'>qemu-system-x86_64 -kernel glane-ifs.bin -serial file:console.log</div>" +
+        "<pre>" + esc(rt.console) + "</pre></div>";
+    }
     if (rt.howto) {
       h += "<h3>Comment c'est produit <span class='hint'>(reproductible)</span></h3>" +
         "<pre class='code'>" + esc(rt.howto) + "</pre>";

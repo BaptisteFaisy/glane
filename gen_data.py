@@ -263,6 +263,7 @@ def qnx_capture():
     rt = {}
     for key, fn in (("uname", "runtime-uname.txt"),
                     ("glaned", "runtime-glaned.txt"),
+                    ("console", "runtime-console.txt"),
                     ("howto", "runtime-howto.md")):
         p = os.path.join(cap, fn)
         if os.path.exists(p):
