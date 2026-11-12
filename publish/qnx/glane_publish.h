@@ -3,12 +3,12 @@
  *
  * glane_publish.h — interface de la couche de publication (target/QNX).
  *
- * C'est le SEUL point de contact avec le mécanisme de publication du système.
- * Sur QNX (__QNX__), l'implémentation crée les objets dans l'arborescence
- * /dev/sensors/<name> (PPS / resource manager) et notifie les abonnés.
- * Ailleurs (build hôte), c'est un repli stdout qui permet de compiler et de
- * tester la boucle du publisher sans SDP. Le socle core/ reste pur : cette
- * couche est la seule à connaître l'OS.
+ * La publication crée, dans l'espace de noms de la cible, un objet par capteur
+ * avec ses feuilles : value, quality, seq, ts_ns, unit, info (+ command/).
+ * C'est une vraie publication (des fichiers réels dans le namespace, lisibles
+ * par `cat`, par un abonné ou un gestionnaire de ressources) — pas un simple
+ * journal sur stdout. Le socle core/ reste pur : cette couche est la seule à
+ * écrire dans le système de fichiers.
  */
 #ifndef GLANE_PUBLISH_H
 #define GLANE_PUBLISH_H
@@ -20,23 +20,30 @@
 extern "C" {
 #endif
 
+#define GLANE_PUBLISH_LEAVES 6   /* value, quality, seq, ts_ns, unit, info  */
+
 typedef struct {
     const glane_desc *desc;   /* description du capteur publié            */
     int opened;               /* 1 si ouvert avec succès                  */
-    int out_fd;               /* QNX : descripteur PPS/resmgr ; hôte : 1  */
+    int use_files;            /* 1 si publication fichier active          */
+    int flat;                 /* 1 = fichiers à plat (pas d'arborescence)  */
+    int fds[GLANE_PUBLISH_LEAVES];   /* descripteurs des feuilles         */
+    char root[160];           /* racine publiée (ex. /sensors)           */
+    int out_fd;               /* repli stdout si use_files == 0          */
     unsigned long published;  /* compteur de mesures publiées             */
 } glane_publisher;
 
-/* Ouvre la publication pour un capteur : crée l'objet /dev/sensors/<name>
- * et ses feuilles (value, quality, seq, ts_ns, unit, info) + command.
- * Retourne 0 si OK, sinon un code négatif.                              */
+/* Ouvre la publication pour un capteur : crée <root>/<name>/{value,quality,
+ * seq,ts_ns,unit,info} (+ <name>/command/). La racine est lue de
+ * l'environnement GLANE_SENSOR_DIR, sinon "/sensors". Si l'écriture de fichiers
+ * est impossible, bascule sur stdout (repli portable). Retourne 0 si OK.   */
 int glane_publish_open(glane_publisher *p, const glane_desc *d);
 
-/* Publie une mesure : met à jour value/quality/seq/ts_ns et notifie les
- * abonnés. Retourne 0 si OK.                                            */
+/* Publie une mesure : écrit la valeur et ses métadonnées dans les feuilles.
+ * Retourne 0 si OK.                                                       */
 int glane_publish_sample(glane_publisher *p, const glane_sample *s);
 
-/* Ferme et détruit les objets publiés. */
+/* Ferme les feuilles et libère. */
 void glane_publish_close(glane_publisher *p);
 
 #ifdef __cplusplus

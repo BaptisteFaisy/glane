@@ -38,6 +38,15 @@ qcc -V gcc_ntox86_64 -std=c11 -O2 \
     "$ROOT/tools/qnxproof.c" -o "$OUT/ifsbin/usr/bin/qnxproof"
 # l'interpréteur doit être trouvable par mkifs relativement au binaire
 cp "$TGT/usr/lib/ldqnx-64.so.2" "$OUT/ifsbin/usr/lib/"
+# Outils : toybox dispatche sur argv[0] -> une copie par nom d'appel.
+# (mkifs refuse le mélange 'nom = chemin' et [type=link].)
+for t in echo uname ls cat tail mkdir; do
+    [ -f "$TGT/usr/bin/toybox" ] && cp "$TGT/usr/bin/toybox" "$OUT/ifsbin/usr/bin/$t"
+done
+for t in ksh sh; do
+    [ -f "$TGT/bin/ksh" ] && cp "$TGT/bin/ksh" "$OUT/ifsbin/usr/bin/$t"
+done
+[ -f "$TGT/bin/pidin" ] && cp "$TGT/bin/pidin" "$OUT/ifsbin/usr/bin/pidin"
 
 echo "==> 2/4 construction de l'IFS minimale (mkifs)"
 mkifs "$ROOT/qnx/glane-ifs.build" "$OUT/glane-ifs.bin"
@@ -63,7 +72,8 @@ kill -9 "$QPID" 2>/dev/null || true
 echo "==> 4/4 extraction des artefacts -> qnx/capture/"
 cp "$CONSOLE" "$CAP/runtime-console.txt"
 grep -a '^\[QNX-PROOF\]' "$CONSOLE" > "$CAP/runtime-uname.txt" || true
-grep -aE '^\{"s":|^glaned: ' "$CONSOLE" > "$CAP/runtime-glaned.txt" || true
+# Section "publication réelle" : message du publisher + ls des objets + valeurs
+awk '/glane-publish:/{f=1} f' "$CONSOLE" | awk '/^=====/{exit} {print}' > "$CAP/runtime-glaned.txt" || true
 grep -a '^{"s":' "$CONSOLE" | head -20 > "$CAP/runtime-journal.jsonl" || true
 # verdict de rejeu déterministe : les 2 runs doivent être identiques
 TOTAL=$(grep -ac '^{"s":' "$CONSOLE" || echo 0)

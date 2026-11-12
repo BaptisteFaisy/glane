@@ -1,53 +1,75 @@
 # Glane — Copyright 2026 Baptiste Faisy. Licence Apache-2.0.
 #
-# glane-ifs.build — image QNX 8.0 minimale (IFS) pour la démo « glaned sur un
-# vrai émulateur ». Tout tient en RAM (aucun disque), amorçable par
-# `qemu-system-x86_64 -kernel glane-ifs.bin` (multiboot).
+# glane-ifs.build — image QNX 8.0 minimale mais RÉALISTE pour la démo :
+#   - procnto-smp-instr + startup-x86 (console série 115200) ;
+#   - un vrai shell ksh (console interactive) + toybox (ls/cat/tail/echo/uname) ;
+#   - glaned qui PUBLIE réellement ses mesures dans un tmpfs
+#     (/dev/shmem/sensors/<name>/{value,quality,seq,ts_ns,unit,info}) ;
+#   - on affiche l'arborescence publiée puis on ouvre un shell.
+# Le tout amorcé par `qemu-system-x86_64 -kernel`, sans disque ni réseau.
 #
-# Recette mkifs (apprise à l'usage, cf. qnx/README.md) :
-#   - tout ce qui est listé avec `nom = chemin` atterrit dans /proc/boot ;
-#   - une entrée SANS `=` garde son chemin d'image (ex. 'lib/libc.so.6') ;
-#   - mkifs exige de trouver l'interpréteur (ldqnx-64.so.2) : les binaires
-#     dynamiques sont donc copiés dans build-qnx/ifsbin/ (mini-racine QNX :
-#     usr/bin + usr/lib + lib) ;
-#   - la console série est la sortie standard du script de démarrage
-#     (startup-x86 -D8250..115200) : pas besoin de /dev/con1.
-#
-# Au démarrage, la console affiche :
-#   [QNX-PROOF] sysname=QNX release=8.0.0 ... <- preuve QNX 8.0 (uname)
-#   [MARK] ...                                   <- jalons
-#   le journal de mesures produit PAR glaned DANS QNX (2 runs, même graine)
-#
-# Construction : qnx/run-glane-qemu.sh (compile + mkifs + boot + capture)
+# Recette mkifs (cf. PROCESS.md) : entrée `nom = chemin` -> /proc/boot ; mkifs
+# exige l'interpréteur ldqnx-64.so.2 relativement au binaire ; binaires
+# dynamiques + libc.so.6 / libgcc_s.so.1 embarqués.
 
-[image=16m]
-# [search] : racine cible QNX x86_64 (pour 'boot/sys/...') + boot/sys
-# (pour 'multiboot.boot', 'startup-x86', 'procnto-smp-instr') + mini-racine
-# des binaires Glane (build-qnx/ifsbin).
+[image=24m]
 [search=/home/baptiste/qnx800/target/qnx/x86_64:/home/baptiste/qnx800/target/qnx/x86_64/boot/sys:/home/baptiste/Bureau/glane/build-qnx/ifsbin]
 
 [virtual=x86_64,multiboot] boot = {
     startup-x86 -D8250..115200
-    PATH=/proc/boot LD_LIBRARY_PATH=/proc/boot procnto-smp-instr
+    PATH=/proc/boot:/usr/bin:/bin LD_LIBRARY_PATH=/proc/boot:/usr/lib procnto-smp-instr
 }
 
 [+script] startup-script = {
     procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
-    PATH=/proc/boot LD_LIBRARY_PATH=/proc/boot
-    qnxproof "GLANE sur QNX 8.0 - emulateur qemu-system-x86_64 (boot -kernel)"
-    qnxproof "glaned run 1 : 20 mesures, sinusoide, graine 42"
-    glaned /proc/boot/temp-chassis.json 20 1 42
-    qnxproof "glaned run 2 : MEME graine (rejeu deterministe attendu)"
-    glaned /proc/boot/temp-chassis.json 20 1 42
-    qnxproof "FIN - les 2 runs doivent etre identiques octet pour octet"
+    PATH=/proc/boot:/usr/bin:/bin LD_LIBRARY_PATH=/proc/boot:/usr/lib
+    qnxproof "GLANE sur QNX 8.0 - emulateur qemu-system-x86_64"
+    echo "=============================================================="
+    echo " GLANE sur QNX 8.0 - publication REELLE dans l'espace de noms"
+    echo "=============================================================="
+    uname -a
+    echo "--- processus QNX vivants (pidin) ---"
+    pidin -F "%n %a"
+    echo
+    echo "--- glaned publie 20 mesures (run 1) ---"
+    GLANE_SENSOR_DIR=/dev/shmem glaned /proc/boot/temp-chassis.json 20 1 42
+    echo
+    echo "--- objets publies (fichiers reels, ls) ---"
+    ls -l /dev/shmem
+    echo "--- contenu reellement publie (info) ---"
+    cat /dev/shmem/temp-chassis.info
+    echo "--- run 2, MEME graine (doit etre identique) ---"
+    GLANE_SENSOR_DIR=/dev/shmem glaned /proc/boot/temp-chassis.json 20 1 42
+    cat /dev/shmem/temp-chassis.info
+    echo "--- value (3 dernieres mesures, en milli-C) ---"
+    tail -n 3 /dev/shmem/temp-chassis.value
+    echo "--- quality (derniere) ---"
+    tail -n 1 /dev/shmem/temp-chassis.quality
+    echo
+    echo "=============================================================="
+    echo " Voici un vrai systeme QNX : shell ksh interactif."
+    echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.value"
+    echo "=============================================================="
+    exec ksh -l
 }
 
-# --- Glane (tout en /proc/boot grâce à la forme 'nom = chemin') ---
-qnxproof = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/qnxproof
 glaned = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/glaned
+qnxproof = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/qnxproof
+echo = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/echo
+uname = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/uname
+ls = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ls
+cat = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/cat
+tail = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/tail
+mkdir = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/mkdir
+pidin = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/pidin
+ksh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ksh
+sh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sh
 temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.json
 
-# --- Bibliothèques (chemins d'image conservés : /lib et /usr/lib) ---
 ldqnx-64.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/ldqnx-64.so.2
 libc.so.6 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libc.so.6
 libgcc_s.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libgcc_s.so.1
+libfsnotify.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libfsnotify.so.1
+libsecpol.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libsecpol.so.1
+libm.so.3 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libm.so.3
+libz.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/libz.so.2
