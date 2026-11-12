@@ -1,5 +1,12 @@
 # Glane sur QNX 8.0 — runbook émulateur (QSTI QEMU)
 
+> ⚠️ **Coordination multi-sessions** : plusieurs projets (Veille, Éclat, Toile,
+> Glane) partagent le même SDP `~/qnx800` et la même image QSTI. Avant toute
+> action QNX (extraction, boot de VM, arrêt), consulter le hub
+> **`~/Bureau/.scratch/qnx-coord/`** (`PROCESS.md` = règles, `qnx-coord.sh status`
+> = VMs/verrous/ports, `registry.tsv` = qui possède quoi). Règle absolue :
+> **jamais `pkill -f qemu-system`** (tue les VMs des autres) — tuer par PID/port.
+
 Objectif : compiler `glaned` pour QNX 8.0, le faire tourner dans l'image
 **Quick Start Target Image (QSTI) pour QEMU**, et **capturer la sortie réelle**
 (journal, latences, arbre `/dev/sensors`, console) pour la section « Émulateur »
