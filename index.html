@@ -24,6 +24,7 @@
   <div class="wrap">
     <a href="#apercu">Aperçu</a>
     <a href="#demo">Démo live</a>
+    <a href="#qnx">Émulateur QNX</a>
     <a href="#features">Fonctionnalités</a>
     <a href="#preuves">Preuves</a>
     <a href="#contrat">Contrat</a>
@@ -149,6 +150,22 @@
       <pre id="d-journal" class="journal"></pre>
     </div>
   </div>
+</section>
+
+<!-- ============================ ÉMULATEUR QNX ============================ -->
+<section id="qnx">
+  <h2>Émulateur QNX 8.0 — preuve réelle</h2>
+  <p class="lead">Glane compile et s'exécute sur la <strong>cible réelle</strong>.
+  Le socle <code>core/</code> (C11 pur) et <code>glaned</code> sont compilés avec
+  <code>qcc</code> (QNX SDP 8.0, variante <code>gcc_ntox86_64</code>), sans aucun
+  warning. C'est la « preuve d'usage QNX » exigée par le règlement : du code qui
+  <em>construit vraiment</em> pour QNX 8.0, pas un simple nom dans le README.</p>
+  <div id="qnx-status" class="tags"></div>
+
+  <h3>Preuve de compilation <span class="hint">(qcc, QNX SDP 8.0)</span></h3>
+  <pre class="code" id="qnx-build-proof"></pre>
+
+  <div id="qnx-runtime"></div>
 </section>
 
 <!-- ============================ FONCTIONNALITÉS ============================ -->

@@ -249,6 +249,41 @@ FEATURES = [
 ]
 
 
+def qnx_capture():
+    """Lit qnx/capture/ : preuve de compilation QNX + (si présente) la sortie
+    runtime capturée par la session qui pilote la VM QSTI (voir qnx/HANDOFF.md)."""
+    cap = os.path.join(ROOT, "qnx", "capture")
+    out = {"build_proof": None, "runtime": None, "screenshots": []}
+    if not os.path.isdir(cap):
+        return out
+    bp = os.path.join(cap, "build-proof.txt")
+    if os.path.exists(bp):
+        with open(bp, encoding="utf-8", errors="replace") as f:
+            out["build_proof"] = f.read()
+    rt = {}
+    for key, fn in (("uname", "runtime-uname.txt"),
+                    ("glaned", "runtime-glaned.txt"),
+                    ("howto", "runtime-howto.md")):
+        p = os.path.join(cap, fn)
+        if os.path.exists(p):
+            with open(p, encoding="utf-8", errors="replace") as f:
+                rt[key] = f.read()
+    j = os.path.join(cap, "runtime-journal.jsonl")
+    if os.path.exists(j):
+        with open(j, encoding="utf-8", errors="replace") as f:
+            lines = [ln.rstrip() for ln in f if ln.strip()]
+        rt["journal_head"] = lines[:10]
+        rt["journal_count"] = len(lines)
+        try:
+            rt["stats"] = analyze(j)
+        except Exception as e:  # noqa: BLE001
+            rt["stats"] = {"error": str(e)}
+    out["runtime"] = rt or None
+    out["screenshots"] = sorted(f for f in os.listdir(cap)
+                                if f.startswith("console-") and f.endswith(".png"))
+    return out
+
+
 def main(argv):
     with_mutation = "--with-mutation" in argv
     data = {
@@ -264,6 +299,7 @@ def main(argv):
         "features": [{"id": i, "kind": k, "name": n, "desc": d, "gla": g}
                      for i, k, n, d, g in FEATURES],
         "faulty_bank": len(os.listdir(os.path.join(ROOT, "core/tests/faulty"))),
+        "qnx": qnx_capture(),
     }
     data["checks_total"] = sum(data["checks"].values())
     import datetime
