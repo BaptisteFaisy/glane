@@ -1,0 +1,31 @@
+name: QNX Build
+
+# CI dédiée QNX 8.0 : tourne UNIQUEMENT sur le runner auto-hébergé de ce PC
+# (label `qnx`, seul endroit où le SDP QNX est licencié). Jamais sur les
+# runners hébergés (pas de SDP là-bas).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qnx-build:
+    # `self-hosted` + `qnx` : seuls les runners auto-hébergés portant le label
+    # `qnx` correspondent. Les runners GitHub hébergés ne matchent jamais.
+    runs-on: [self-hosted, qnx]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Compile glaned + socle core/ pour QNX 8.0
+        run: bash qnx/build.sh
+
+      - name: Preuve d'exécution (IFS + QEMU + capture, < 5 min)
+        run: bash qnx/run-glane-qemu.sh
