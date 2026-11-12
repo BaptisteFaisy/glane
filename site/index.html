@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glane — couche capteurs pour QNX 8.0</title>
+<meta name="description" content="Glane : couche d'abstraction capteurs et publication de périphériques pour QNX 8.0. Toutes les fonctionnalités, mesurées et vérifiées.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Glane</h1>
+    <p class="tagline">Couche capteurs et publication de périphériques pour <strong>QNX 8.0</strong> —
+    récolter ce que les capteurs donnent, sans rien perdre.</p>
+    <div id="badges" class="badges"></div>
+    <p class="meta">QNX Global Hackathon · catégorie Low-level Software ·
+      dépôt <a href="https://github.com/BaptisteFaisy/glane">BaptisteFaisy/glane</a> ·
+      généré le <span id="generated"></span></p>
+  </div>
+</header>
+
+<nav class="nav" id="nav">
+  <div class="wrap">
+    <a href="#apercu">Aperçu</a>
+    <a href="#demo">Démo live</a>
+    <a href="#features">Fonctionnalités</a>
+    <a href="#preuves">Preuves</a>
+    <a href="#contrat">Contrat</a>
+    <a href="#outils">Outils</a>
+    <a href="#exigences">Exigences</a>
+    <a href="#trace">Traçabilité</a>
+    <a href="#idees">100 idées</a>
+    <a href="#docs">Docs</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============================ APERÇU ============================ -->
+<section id="apercu">
+  <h2>Aperçu</h2>
+  <p class="lead">Un capteur — réel sur Raspberry Pi 5 ou simulé sous QEMU — est
+  décrit dans un fichier, découvert, calibré, publié dans l'arborescence du
+  système avec horodatage à la source, et sa latence de publication est
+  <strong>mesurée et bornée</strong>, sans écrire un gestionnaire de ressources
+  à la main.</p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>Le framework existe, l'écosystème n'existe pas</h3>
+      <p>QNX livre un mécanisme de publication de périphériques et <strong>un
+      seul</strong> publisher (<code>usblauncher_otg</code>, orienté
+      USB/stockage/média). Rien pour les capteurs. Glane ne réinvente pas le
+      mécanisme : il fournit ce qui manque pour s'en servir.</p>
+    </div>
+    <div class="card">
+      <h3>Tout doit être simulable</h3>
+      <p>Aucune simulation sans matériel n'est documentée. Le publisher virtuel
+      est à la fois l'outil de démonstration, le harnais de test en CI, et la
+      raison pour laquelle le projet est vérifiable <strong>avant</strong>
+      d'avoir une carte.</p>
+    </div>
+    <div class="card">
+      <h3>Mesurer plutôt qu'affirmer</h3>
+      <p>Rien n'est dit sur la latence de publication. Le banc horodaté
+      (source → livraison → abonné) transforme une affirmation en chiffre.
+      Aucun chiffre n'est publié sans sortir de <code>glat</code>.</p>
+    </div>
+  </div>
+
+  <h3>Les trous exploités (tous sourcés dans la documentation QNX)</h3>
+  <div id="holes" class="tags"></div>
+</section>
+
+<!-- ============================ DÉMO LIVE ============================ -->
+<section id="demo">
+  <h2>Démo live — publisher virtuel</h2>
+  <p class="lead">Portage fidèle en JavaScript du générateur synthétique
+  (<code>core/src/virtuel.c</code>) et de la calibration entière
+  (<code>core/src/calib.c</code>, en <code>BigInt</code>). Même table
+  sinusoïdale Q15, même hachage de bruit, même Horner : ce que vous voyez est
+  ce que produit le C, à la mesure près.</p>
+
+  <div class="demo-grid">
+    <div class="panel controls">
+      <h3>Capteur</h3>
+      <label>Forme d'onde
+        <select id="d-wf">
+          <option value="0">constante</option>
+          <option value="1" selected>sinusoïde</option>
+          <option value="2">dent de scie</option>
+          <option value="3">triangle</option>
+          <option value="4">bruit</option>
+        </select>
+      </label>
+      <label>Graine <input id="d-seed" type="number" value="42"></label>
+      <label>Base (milli) <input id="d-base" type="number" value="20000"></label>
+      <label>Amplitude (milli) <input id="d-amp" type="number" value="10000"></label>
+      <label>Période (pas) <input id="d-period" type="number" value="64"></label>
+      <label>Dérive / pas <input id="d-drift" type="number" value="0"></label>
+      <label>Sat. min <input id="d-satmin" type="number" value="-40000"></label>
+      <label>Sat. max <input id="d-satmax" type="number" value="125000"></label>
+      <label>Pas <input id="d-steps" type="number" value="180"></label>
+
+      <h3>Calibration</h3>
+      <label>Kind
+        <select id="d-calib">
+          <option value="none">none (identité)</option>
+          <option value="poly">poly</option>
+        </select>
+      </label>
+      <label>a0 (milli) <input id="d-c0" type="number" value="0"></label>
+      <label>a1 (gain ×1e6) <input id="d-c1" type="number" value="1000000"></label>
+      <label>a2 (×1e6) <input id="d-c2" type="number" value="0"></label>
+      <label>a3 (×1e6) <input id="d-c3" type="number" value="0"></label>
+
+      <h3>Livraison</h3>
+      <label>Latence (ns) <input id="d-lat" type="number" value="1500000"></label>
+      <label>Gigue (ns, démo) <input id="d-jit" type="number" value="0"></label>
+      <label>Stale après (ms) <input id="d-stale" type="number" value="500"></label>
+      <button id="d-run" type="button">Rejouer</button>
+      <button id="d-reset" type="button" class="ghost">Réinitialiser</button>
+    </div>
+
+    <div class="panel">
+      <h3>Mesures <span class="hint" id="d-count"></span></h3>
+      <svg id="d-chart" viewBox="0 0 720 240" preserveAspectRatio="none" role="img"
+           aria-label="Courbe des mesures"></svg>
+      <h3>Qualité</h3>
+      <div id="d-quality" class="qstrip" aria-label="Qualité par mesure"></div>
+      <div class="legend">
+        <span><i class="dot ok"></i>ok</span>
+        <span><i class="dot sat"></i>saturated</span>
+        <span><i class="dot stale"></i>stale</span>
+        <span><i class="dot fault"></i>fault</span>
+      </div>
+      <h3>Latence source → livraison <span class="hint">(comme <code>glat</code>)</span></h3>
+      <div id="d-latency" class="stats"></div>
+      <h3>Déterminisme</h3>
+      <p class="small">Empreinte FNV-1a du journal :
+        <code id="d-fp"></code>
+        <button id="d-again" type="button" class="ghost small">rejouer</button>
+        <span id="d-fp-verdict"></span></p>
+      <h3>Journal (format CONTRACT §7)</h3>
+      <pre id="d-journal" class="journal"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FONCTIONNALITÉS ============================ -->
+<section id="features">
+  <h2>Fonctionnalités</h2>
+  <p class="lead">Tout ce que le dépôt contient aujourd'hui, groupé par nature.
+  Chaque carte cite les exigences (<code>GLA-xx</code>) qu'elle couvre.</p>
+  <div class="filter" id="f-filter">
+    <button data-kind="all" class="on">Tout</button>
+    <button data-kind="core">Socle C11</button>
+    <button data-kind="outil">Outils</button>
+    <button data-kind="gla">Avec exigence</button>
+  </div>
+  <div id="features-grid" class="grid"></div>
+</section>
+
+<!-- ============================ PREUVES ============================ -->
+<section id="preuves">
+  <h2>Preuves</h2>
+  <p class="lead">Chiffres produits en exécutant le code du dépôt
+  (<code>site/gen_data.py</code>), pas recopiés à la main.</p>
+  <div id="proofs" class="stats big"></div>
+
+  <h3>Vérifications C par module</h3>
+  <div id="checks-bars"></div>
+
+  <h3>Journaux réels <span class="hint">(sortie de <code>glaned-sim</code>)</span></h3>
+  <div class="tabs" id="journal-tabs"></div>
+  <pre id="journal-body" class="journal"></pre>
+
+  <h3>Latences mesurées <span class="hint">(sortie de <code>glat</code>)</span></h3>
+  <div id="glat-tables"></div>
+
+  <h3>Test de mutation <span class="hint">(<code>glane_mutate.py</code>)</span></h3>
+  <p class="small" id="mutation-summary"></p>
+  <ul id="mutation-list" class="tight"></ul>
+
+  <h3>Test différentiel C ↔ Python <span class="hint">(GLA-05)</span></h3>
+  <p class="small" id="diff-summary"></p>
+</section>
+
+<!-- ============================ CONTRAT ============================ -->
+<section id="contrat">
+  <h2>Contrat gelé</h2>
+  <p class="lead"><code>CONTRACT.md</code> fait foi. Les en-têtes de
+  <code>core/include/glane/</code> fixent les signatures. Ni les agents ni les
+  contributeurs ne le modifient : ils l'implémentent.</p>
+
+  <h3>ABI de la mesure — 24 octets</h3>
+  <pre class="code">typedef struct {
+  uint32_t sensor_id;     /* identifiant issu de la description          */
+  uint32_t seq;           /* séquence monotone, jamais réinitialisée      */
+  int64_t  ts_ns;         /* horodatage à la source (CLOCK_MONOTONIC)     */
+  int32_t  value_milli;   /* valeur en milli-unités (jamais de flottant)  */
+  uint16_t unit;          /* GLANE_UNIT_* : C, K, V, mA, deg/s, g, rpm…   */
+  uint8_t  quality;       /* OK | STALE | SATURATED | FAULT | UNCERTAIN   */
+  uint8_t  flags;         /* FIRST | CALIBRATED | INJECTED | SIMULATED    */
+} glane_sample;           /* 24 octets, aucun pointeur */</pre>
+  <p class="small"><code>quality</code> décrit la <strong>mesure</strong> ;
+  <code>flags</code> décrit son <strong>origine</strong>. Les mélanger rendrait
+  le rejeu ambigu. L'échelle entière en milli-unités permet au jumeau Python de
+  rejouer la calibration bit à bit.</p>
+
+  <h3>Arborescence publiée</h3>
+  <pre class="code">/dev/sensors/&lt;name&gt;/{value,quality,seq,ts_ns,unit,info}
+/dev/sensors/&lt;name&gt;/command/{period,calibrate,inject,selftest}</pre>
+  <p class="small">Nom de capteur : non vide, ≤ 63 octets, charset
+  <code>[a-z0-9._-]</code>, sans point initial ou final. Validé côté C
+  (<code>schema.c</code>) avant publication et côté hôte
+  (<code>gschema.py</code>) sur une arborescence réelle — même contrat.</p>
+
+  <h3>Journal de mesures</h3>
+  <pre class="code" id="contract-journal"></pre>
+  <p class="small"><code>ts_ns</code> = horodatage à la source ;
+  <code>d_ns</code> = horodatage de livraison. La latence est
+  <code>d_ns − ts_ns</code> : c'est ce que mesure <code>glat</code>.</p>
+
+  <h3>Calibration</h3>
+  <p class="small">Polynôme de degré ≤ 3, coefficients entiers échelle
+  <code>10^6</code>, accumulateur <code>__int128</code>. Le terme constant
+  <code>a0</code> est en milli-unités, <code>a1</code> est un gain sans
+  dimension. Bornes validées à l'analyse : <code>|x| ≤ 1 048 575</code>,
+  <code>|coef[i]| ≤ 1 048 575</code> — aucun terme de degré 3 ne déborde.</p>
+</section>
+
+<!-- ============================ OUTILS ============================ -->
+<section id="outils">
+  <h2>Outils</h2>
+  <p class="lead">Tout est en C11 (socle + outils hôte) ou en Python 3
+  <strong>stdlib uniquement</strong>. Aucune dépendance externe.</p>
+  <div id="tools-usage"></div>
+</section>
+
+<!-- ============================ EXIGENCES ============================ -->
+<section id="exigences">
+  <h2>Exigences (GLA-01 … GLA-24)</h2>
+  <p class="lead">Trois niveaux d'ambition : <strong>S</strong> socle
+  (indispensable à une soumission), <strong>C</strong> complet (la version
+  visée), <strong>X</strong> extrême. L'état est dérivé de la matrice de
+  traçabilité.</p>
+  <div id="requirements"></div>
+</section>
+
+<!-- ============================ TRAÇABILITÉ ============================ -->
+<section id="trace">
+  <h2>Matrice de traçabilité</h2>
+  <p class="lead">Générée par <code>scripts/glane_trace.py</code> : chaque
+  exigence est reliée aux fichiers et aux tests qui la citent.</p>
+  <div id="trace-matrix"></div>
+</section>
+
+<!-- ============================ 100 IDÉES ============================ -->
+<section id="idees">
+  <h2>100 idées pour aller plus loin</h2>
+  <p class="lead">4 lots de 25, sans doublon avec le cahier des charges ni les
+  25 leviers déjà publiés. Les idées marquées ⭐ sont
+  <strong>implémentées</strong>. Filtrez par direction ou par lot.</p>
+  <div class="filter" id="i-filter">
+    <button data-lot="all" class="on">Tous les lots</button>
+    <button data-lot="A">A · socle</button>
+    <button data-lot="B">B · bus &amp; sim</button>
+    <button data-lot="C">C · outillage</button>
+    <button data-lot="D">D · écosystème</button>
+    <button data-lot="star">⭐ implémentées</button>
+  </div>
+  <div id="ideas-list"></div>
+</section>
+
+<!-- ============================ DOCS ============================ -->
+<section id="docs">
+  <h2>Documentation</h2>
+  <div class="cols" id="docs-links"></div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p>Glane — Copyright 2026 Baptiste Faisy · Licence
+  <a href="https://github.com/BaptisteFaisy/glane/blob/main/LICENSE">Apache-2.0</a> ·
+  <a href="https://github.com/BaptisteFaisy/glane">dépôt</a> ·
+  <a href="https://github.com/BaptisteFaisy/glane/actions">CI</a></p>
+  <p class="small">Cette page ne charge aucune ressource externe : pas de CDN,
+  pas de police tierce, pas de mesure d'audience.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
