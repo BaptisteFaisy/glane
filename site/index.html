@@ -158,8 +158,13 @@
   <p class="lead">Glane compile et s'exécute sur la <strong>cible réelle</strong>.
   Le socle <code>core/</code> (C11 pur) et <code>glaned</code> sont compilés avec
   <code>qcc</code> (QNX SDP 8.0, variante <code>gcc_ntox86_64</code>), sans aucun
-  warning. C'est la « preuve d'usage QNX » exigée par le règlement : du code qui
-  <em>construit vraiment</em> pour QNX 8.0, pas un simple nom dans le README.</p>
+  warning. Puis <strong>une image QNX 8.0 minimale est amorcée dans
+  <code>qemu-system-x86_64</code></strong> (via <code>-kernel</code>, sans disque
+  ni réseau) et le <code>uname</code> de l'invité est capturé tel quel, avec le
+  journal de mesures produit <em>par glaned dans QNX</em>.
+  C'est la « preuve d'usage QNX » exigée par le règlement : du code qui
+  <em>construit et tourne vraiment</em> sur QNX 8.0, pas un simple nom dans le
+  README — et la commande d'amorçage est reproduite ci-dessous.</p>
   <div id="qnx-status" class="tags"></div>
 
   <h3>Preuve de compilation <span class="hint">(qcc, QNX SDP 8.0)</span></h3>

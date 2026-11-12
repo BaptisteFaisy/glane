@@ -1,0 +1,53 @@
+# Glane — Copyright 2026 Baptiste Faisy. Licence Apache-2.0.
+#
+# glane-ifs.build — image QNX 8.0 minimale (IFS) pour la démo « glaned sur un
+# vrai émulateur ». Tout tient en RAM (aucun disque), amorçable par
+# `qemu-system-x86_64 -kernel glane-ifs.bin` (multiboot).
+#
+# Recette mkifs (apprise à l'usage, cf. qnx/README.md) :
+#   - tout ce qui est listé avec `nom = chemin` atterrit dans /proc/boot ;
+#   - une entrée SANS `=` garde son chemin d'image (ex. 'lib/libc.so.6') ;
+#   - mkifs exige de trouver l'interpréteur (ldqnx-64.so.2) : les binaires
+#     dynamiques sont donc copiés dans build-qnx/ifsbin/ (mini-racine QNX :
+#     usr/bin + usr/lib + lib) ;
+#   - la console série est la sortie standard du script de démarrage
+#     (startup-x86 -D8250..115200) : pas besoin de /dev/con1.
+#
+# Au démarrage, la console affiche :
+#   [QNX-PROOF] sysname=QNX release=8.0.0 ... <- preuve QNX 8.0 (uname)
+#   [MARK] ...                                   <- jalons
+#   le journal de mesures produit PAR glaned DANS QNX (2 runs, même graine)
+#
+# Construction : qnx/run-glane-qemu.sh (compile + mkifs + boot + capture)
+
+[image=16m]
+# [search] : racine cible QNX x86_64 (pour 'boot/sys/...') + boot/sys
+# (pour 'multiboot.boot', 'startup-x86', 'procnto-smp-instr') + mini-racine
+# des binaires Glane (build-qnx/ifsbin).
+[search=/home/baptiste/qnx800/target/qnx/x86_64:/home/baptiste/qnx800/target/qnx/x86_64/boot/sys:/home/baptiste/Bureau/glane/build-qnx/ifsbin]
+
+[virtual=x86_64,multiboot] boot = {
+    startup-x86 -D8250..115200
+    PATH=/proc/boot LD_LIBRARY_PATH=/proc/boot procnto-smp-instr
+}
+
+[+script] startup-script = {
+    procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
+    PATH=/proc/boot LD_LIBRARY_PATH=/proc/boot
+    qnxproof "GLANE sur QNX 8.0 - emulateur qemu-system-x86_64 (boot -kernel)"
+    qnxproof "glaned run 1 : 20 mesures, sinusoide, graine 42"
+    glaned /proc/boot/temp-chassis.json 20 1 42
+    qnxproof "glaned run 2 : MEME graine (rejeu deterministe attendu)"
+    glaned /proc/boot/temp-chassis.json 20 1 42
+    qnxproof "FIN - les 2 runs doivent etre identiques octet pour octet"
+}
+
+# --- Glane (tout en /proc/boot grâce à la forme 'nom = chemin') ---
+qnxproof = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/qnxproof
+glaned = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/glaned
+temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.json
+
+# --- Bibliothèques (chemins d'image conservés : /lib et /usr/lib) ---
+ldqnx-64.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/ldqnx-64.so.2
+libc.so.6 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libc.so.6
+libgcc_s.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libgcc_s.so.1
