@@ -66,6 +66,12 @@ EOF
 this repository. That is perfectly fine for chapters 1–3; chapter 4 explains
 exactly what changes for a real bus.
 
+> **Note on `bus`.** The `bus` block is parsed and validated, but the only
+> *reader* implemented is the virtual generator (see 4.3). The host simulator
+> and the QNX publisher always produce values with that generator, whatever
+> `bus.kind` says — no I²C transaction is ever performed here. The `bus` block
+> is the contract a real driver will honour.
+
 ### 1.3 Run it, then break it on purpose
 
 ```sh
@@ -109,6 +115,14 @@ calibration, same journal. Run it and watch the numbers become evidence.
 
 ### 2.1 Run the virtual publisher
 
+The argument order is fixed:
+
+```text
+glaned-sim <desc.json> <steps> <waveform> <seed> <latency_ns> <out.journal>
+           waveform ∈ const | sine | ramp | triangle | noise
+           latency_ns = injected delivery delay (the host has no bus)
+```
+
 ```sh
 ./build/glaned-sim core/tests/valid/temp-chassis.json 2000 sine 42 1500000 /tmp/j1.jsonl
 head -n 3 /tmp/j1.jsonl
@@ -132,6 +146,10 @@ never floats, so the calibration is replayed bit-for-bit by the Python twin.
 cmp /tmp/j1.jsonl /tmp/j2.jsonl && echo "IDENTICAL byte for byte"
 ```
 
+```text
+IDENTICAL byte for byte
+```
+
 Determinism is a feature, not a detail: the same description, seed and
 waveform must produce the same journal, so a test can never pass by accident.
 
@@ -141,6 +159,13 @@ waveform must produce the same journal, so a test can never pass by accident.
 python3 host/glat.py /tmp/j1.jsonl      # p50 / p99 / p99.9
 python3 host/greport.py /tmp/j1.jsonl /tmp/report.html
 ```
+
+```text
+/tmp/report.html
+```
+
+(`greport.py` prints the path of the standalone HTML report it wrote; the JSON
+above is the `glat.py` output.)
 
 ```json
 {
@@ -177,7 +202,12 @@ bash qnx/run-glane-qemu.sh
 
 That one command: compiles with `qcc` (target `gcc_ntox86_64`), assembles a
 minimal diskless IFS, boots it with `qemu-system-x86_64 -kernel`, and captures
-the serial console into `qnx/capture/`.
+the serial console into `qnx/capture/`. It ends with:
+
+```text
+artefacts : …/qnx/capture/runtime-{console,uname,glaned,journal.jsonl,howto.md}
+rejeu : IDENTIQUES octet pour octet (6 mesures comparées, rejouées DANS QNX 8.0)
+```
 
 ### 3.2 What the guest proved
 
@@ -193,8 +223,8 @@ Look for, in order:
 1. `[QNX-PROOF] sysname=QNX release=8.0.0 …` — `uname` run *inside* the guest.
 2. `pidin` listing `procnto-smp-instr` (pid 1) — a real QNX process table.
 3. `glaned: 6 mesures publiées pour 'temp-chassis'` — real publication.
-4. `ls -l /dev/shmem` — six leaves per sensor (`value`, `quality`, `seq`,
-   `ts_ns`, `unit`, `info`), real files inside the guest.
+4. `ls -l /dev/shmem` — one real file per field, per sensor (`value`,
+   `quality`, `seq`, `ts_ns`, `unit`, `info`), inside the guest.
 5. `gwatch[…]=6750 ALARME (seuil=3000)` — a subscriber reading the published
    value and reacting to a threshold.
 6. `gsensor_resmgr: ATTACH OK /dev/sensors/temp-chassis` then
@@ -210,8 +240,11 @@ Look for, in order:
 ### 3.3 The live guest (interactive)
 
 The same image also boots with a VGA console and an interactive `ksh` (see
-[`qnx/VITRINE.md`](../qnx/VITRINE.md)). In the browser you see the VGA screen
-and the serial console, and you can type inside the guest:
+[`qnx/VITRINE.md`](../qnx/VITRINE.md), which also gives the systemd units to run
+your own). The author's instance is at
+<https://baptiste-ms-7d18.tail3a8bdf.ts.net:10000> — if it is offline, run the
+two units locally. In the browser you see the VGA screen and the serial
+console, and you can type inside the guest:
 
 ```sh
 ls /dev/shmem
@@ -247,7 +280,10 @@ The description already carries everything a driver needs:
 ### 4.2 A worked example — BME280 over I²C on a Raspberry Pi 5
 
 QNX 8.0 ships a Raspberry Pi 5 image (the hackathon's reference hardware). A
-BME280 answers on I²C address `0x76`. The driver would:
+BME280 answers on I²C address `0x76`. This example is **illustrative, not
+executed here**: the guest built in chapter 3 is x86_64 (`gcc_ntox86_64`),
+while a Raspberry Pi 5 is ARM (`gcc_ntoaarch64le`) — the driver code is the
+same, only the toolchain variant changes. The driver would:
 
 1. `open("/dev/i2c0")` and read the identification register `0xD0` (must be
    `0x60`).
