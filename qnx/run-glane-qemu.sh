@@ -60,9 +60,25 @@ echo "==> 2/4 construction de l'IFS minimale (mkifs)"
 mkifs "$ROOT/qnx/glane-ifs.build" "$OUT/glane-ifs.bin"
 
 echo "==> 3/4 amorçage dans QEMU (qemu-system-x86_64 -kernel, sans disque/réseau)"
+# Le binaire QEMU est cherché par son NOM COMPLET : sur un runner où le PATH
+# du service est minimal, « qemu-system-x86_64 » seul n'est pas trouvé et le
+# job échoue sur une erreur trompeuse (« commande introuvable ») alors que
+# QEMU est installé. On dit explicitement ce qui manque.
+QEMU_BIN="${QEMU_BIN:-$(command -v qemu-system-x86_64 || true)}"
+if [ -z "$QEMU_BIN" ] || [ ! -x "$QEMU_BIN" ]; then
+    for candidat in /usr/bin/qemu-system-x86_64 /usr/local/bin/qemu-system-x86_64; do
+        [ -x "$candidat" ] && QEMU_BIN="$candidat" && break
+    done
+fi
+if [ -z "$QEMU_BIN" ]; then
+    echo "ERREUR: qemu-system-x86_64 introuvable (PATH=$PATH)." >&2
+    echo "Ce job exige QEMU : le runner doit avoir QEMU installé (labels 'qnx')." >&2
+    exit 1
+fi
+echo "    qemu : $QEMU_BIN"
 CONSOLE="$OUT/qnx-console.log"
 rm -f "$CONSOLE"
-qemu-system-x86_64 -kernel "$OUT/glane-ifs.bin" -m 512 -smp 1 -cpu max \
+"$QEMU_BIN" -kernel "$OUT/glane-ifs.bin" -m 512 -smp 1 -cpu max \
     -display none -vga none -serial "file:$CONSOLE" -no-reboot &
 QPID=$!
 i=0
