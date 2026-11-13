@@ -1,0 +1,33 @@
+# glane-qemu.service — Invite QNX 8.0 de GLANE (QEMU, poste `pc`).
+#
+# Adapté de qnx-emu/systemd/replique-ems-qemu.service.
+# L'invité démarre l'IFS de Glane (`glane-vitrine-ifs.bin`, construite par
+# `qnx/glane-vitrine.build`) : console VGA (invite ksh) + console série
+# (scénario de publication des mesures par glaned).
+#
+# Les chemins de l'unité web jumelle (glane-web.service) doivent coller à
+# ceux-ci : --serie, --moniteur.
+#
+# NOTE — %h n'est PAS développé dans Environment= (systemd) : les chemins y
+# sont en absolu ; %h ne marche que dans ExecStart.
+[Unit]
+Description=Invite QNX 8.0 — Glane (QEMU)
+After=network.target
+
+[Service]
+Type=simple
+# QEMU de la distribution Debian (le SDP 8.0 n'en livre pas pour l'hôte).
+# --prefixe : racine des données QEMU (firmware/BIOS) — voir qnx-emu/README.md.
+ExecStart=%h/Bureau/qnx-emu/guest-qemu.sh \
+    --ifs %h/Bureau/glane/build-qnx/glane-vitrine-ifs.bin \
+    --serie %h/Bureau/glane/build-qnx/vitrine/serial.log \
+    --moniteur %h/Bureau/glane/build-qnx/vitrine/mon.sock \
+    --memoire 1024 --cpu max --smp 2 \
+    --qemu /usr/bin/qemu-system-x86_64 \
+    --prefixe %h/.qemu-data
+Restart=always
+RestartSec=10
+KillMode=mixed
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,123 @@
+# Glane — Copyright 2026 Baptiste Faisy. Licence Apache-2.0.
+#
+# glane-vitrine.build — IFS QNX 8.0 de la VITRINE WEB de Glane.
+#
+# Différence avec `glane-ifs.build` (l'IFS de preuve, qui reste intact) :
+#   - les pilotes de console sont démarrés (`devc-con` = VGA, `devc-ser8250`
+#     = port série) : sans eux, l'écran VGA reste noir et la capture
+#     `/screen.png` est vide ;
+#   - le scénario de Glane joue sur la CONSOLE SÉRIE (con0 = console de
+#     démarrage, celle que `startup-x86 -D8250..115200` met en place) : le
+#     journal `/console` de la vitrine montre donc le banner QNX 8.0 et les
+#     publications de mesures de Glane ;
+#   - un `ksh` INTERACTIF est lancé sur la console VGA (con1) via `on -d` :
+#     c'est lui qui affiche l'invite à l'écran et qui reçoit les touches
+#     injectées par la page web (`/key?k=…`).
+#
+# Piège (déjà payé) : le `exec ksh -l` du buildfile de preuve échoue
+# (« Unable to start "exec" (2) ») : le `[+script]` de démarrage n'est pas un
+# shell, `exec` n'y existe pas. On passe par `on`, qui sait lancer un
+# processus sur une console et le mettre en arrière-plan.
+#
+# Construction : mkifs glane-vitrine.build glane-vitrine-ifs.bin
+
+[image=24m]
+[search=/home/baptiste/qnx800/target/qnx/x86_64:/home/baptiste/qnx800/target/qnx/x86_64/boot/sys:/home/baptiste/Bureau/glane/build-qnx/ifsbin]
+
+[virtual=x86_64,multiboot] boot = {
+    startup-x86 -D8250..115200
+    PATH=/proc/boot:/usr/bin:/bin LD_LIBRARY_PATH=/proc/boot:/usr/lib procnto-smp-instr
+}
+
+[+script] startup-script = {
+    procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
+    PATH=/proc/boot:/usr/bin:/bin LD_LIBRARY_PATH=/proc/boot:/usr/lib
+    devc-con
+    devc-ser8250 -e
+    waitfor /dev/ser1
+    display_msg "QNX 8.0 - invite Glane"
+    qnxproof "GLANE sur QNX 8.0 - emulateur qemu-system-x86_64"
+    echo "=============================================================="
+    echo " GLANE sur QNX 8.0 - publication REELLE dans l'espace de noms"
+    echo "=============================================================="
+    uname -a
+    echo "--- processus QNX vivants (pidin) ---"
+    pidin -F "%n %a"
+    echo
+    echo "--- glaned publie 3 capteurs (temp 100ms, imu 10ms, batterie 500ms) ---"
+    GLANE_SENSOR_DIR=/dev/shmem glaned 60 /proc/boot/temp-chassis.json /proc/boot/imu-accel.json /proc/boot/batt-voltage.json
+    echo
+    echo "--- objets publies (fichiers reels, ls) ---"
+    ls -l /dev/shmem
+    echo "--- mesures publiees (extrait imu-accel.info) ---"
+    tail -n 5 /dev/shmem/imu-accel.info
+    echo "--- abonne (gwatch) relit imu-accel et alarme si > 3000 ---"
+    gwatch /dev/shmem/imu-accel.value 3000 6
+    echo
+    echo "--- gestionnaire de ressources /dev/sensors (resmgr QNX) ---"
+    gsensor_resmgr temp-chassis /dev/shmem/temp-chassis.value
+    sleep 1
+    ls -l /dev/sensors
+    echo -n "cat /dev/sensors/temp-chassis -> "
+    cat /dev/sensors/temp-chassis
+    echo
+    echo "--- superviseur (HAM de poche) : on tue glaned, il est relance ---"
+    gsuper /proc/boot/glaned 99999 /proc/boot/temp-chassis.json
+    sleep 2
+    slay glaned
+    sleep 2
+    echo "--- glaned a ete tue puis relance par gsuper ---"
+    pidin -F "%n"
+    echo
+    echo "=============================================================="
+    echo " Voici un vrai systeme QNX : shell ksh interactif."
+    echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
+    echo "=============================================================="
+    # --- la VITRINE : l'ecran VGA montre les mesures de Glane ---------
+    on -t /dev/con1 -e HOME=/proc/boot ksh -c "echo '--- Glane sur QNX 8.0 : mesures publiees ---'; cat /dev/shmem/temp-chassis.info; cat /dev/shmem/imu-accel.info"
+    # --- puis l'invite interactive sur la MEME console VGA -------------
+    on -d -t /dev/con1 -e HOME=/proc/boot ksh /proc/boot/invite.sh
+}
+
+# --- binaires de Glane (compiles dans build-qnx/ifsbin/usr/bin) -----------
+glaned = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/glaned
+qnxproof = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/qnxproof
+gwatch = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gwatch
+gsensor_resmgr = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gsensor_resmgr
+gsuper = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/gsuper
+
+# --- outils (copies de toybox, un binaire par nom d'appel) ---------------
+echo = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/echo
+uname = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/uname
+ls = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ls
+cat = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/cat
+tail = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/tail
+mkdir = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/mkdir
+sleep = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sleep
+pidin = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/pidin
+ksh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ksh
+sh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sh
+
+# --- pilotes de console (VGA + serie) -----------------------------------
+devc-con = /home/baptiste/qnx800/target/qnx/x86_64/sbin/devc-con
+devc-ser8250 = /home/baptiste/qnx800/target/qnx/x86_64/sbin/devc-ser8250
+on = /home/baptiste/qnx800/target/qnx/x86_64/bin/on
+slay = /home/baptiste/qnx800/target/qnx/x86_64/bin/slay
+
+# --- donnees de demonstration -------------------------------------------
+temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.json
+imu-accel.json = /home/baptiste/Bureau/glane/core/tests/valid/imu-accel.json
+batt-voltage.json = /home/baptiste/Bureau/glane/core/tests/valid/batt-voltage.json
+
+# --- invite interactive (script ksh de la console VGA) -------------------
+invite.sh = /home/baptiste/Bureau/glane/qnx/invite.sh
+invite.kshrc = /home/baptiste/Bureau/glane/qnx/invite.kshrc
+
+# --- bibliotheques partagees --------------------------------------------
+ldqnx-64.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/ldqnx-64.so.2
+libc.so.6 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libc.so.6
+libgcc_s.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libgcc_s.so.1
+libfsnotify.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libfsnotify.so.1
+libsecpol.so.1 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libsecpol.so.1
+libm.so.3 = /home/baptiste/qnx800/target/qnx/x86_64/lib/libm.so.3
+libz.so.2 = /home/baptiste/qnx800/target/qnx/x86_64/usr/lib/libz.so.2
