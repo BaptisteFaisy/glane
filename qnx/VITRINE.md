@@ -79,6 +79,17 @@ preuve, qui reste intacte) et y ajoute **les deux consoles** :
    `--prefixe`).
 5. **Le clavier fonctionne** : `sendkey` du moniteur QEMU atteint bien
    l'invité (`cat /dev/con1` affiche la frappe ; le shell exécute la commande).
+   **Piège payé** : le moniteur ne renvoie pas de réponse par commande ; la
+   boucle de lecture de `web.py` attendait donc son timeout (3,3 s PAR touche).
+   Une commande de 20 caractères partait en morceaux (le client abandonnait
+   avant la fin). D'où `envoyer_touches()` : **une seule connexion**, les
+   `sendkey` s'enchaînent à 60 ms, sans lire de réponse — 20 touches en ~1,2 s.
+6. **Envoyer une ligne de commande** : `GET /type?t=<texte>&ret=1&delay=0.06`
+   tape la chaîne touche par touche (majuscules et symboles traduits en
+   `shift-…`), `ret=1` ajoute Entrée. La page de la vitrine et la section
+   « Émulateur QNX » du site ont un champ de saisie branché dessus ; la réponse
+   du `ksh` apparaît sur l'écran VGA (relu par `/screen.png` ou `/stream`).
+   Exemple : `curl 'http://127.0.0.1:8101/type?t=ls%20/dev/shmem'`.
 6. Coordination multi-projets : ports réservés via
    `qnx-coord.sh vm-add glane …`, arrêt **par PID** uniquement, jamais de
    `pkill qemu`.
