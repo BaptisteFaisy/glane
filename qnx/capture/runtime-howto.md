@@ -1,6 +1,6 @@
 # Capture d'exécution Glane sur QNX 8.0 (émulateur)
 
-Date : 2026-11-13 14:12:47 CET
+Date : 2026-11-13 23:30:09 CET
 Hôte : Linux 7.0.0-43-generic x86_64 GNU/Linux
 Outil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`
 
@@ -9,7 +9,7 @@ Outil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`
 qemu-system-x86_64 -kernel build-qnx/glane-ifs.bin -m 512 -smp 1 -cpu max \
   -display none -vga none -serial file:build-qnx/qnx-console.log -no-reboot
 ```
-IFS minimale (5,7M, sans disque) construite par `qnx/glane-ifs.build` :
+IFS minimale (7,1M, sans disque) construite par `qnx/glane-ifs.build` :
 procnto-smp-instr + startup-x86 (console série 115200) + glaned + qnxproof.
 
 ## Preuve d'OS (uname exécuté DANS l'invité)

@@ -16,8 +16,8 @@ Environment=QNX_EMS_SERIE=/home/baptiste/Bureau/glane/build-qnx/vitrine/serial.l
 Environment=QNX_EMS_MON=/home/baptiste/Bureau/glane/build-qnx/vitrine/mon.sock
 Environment=QNX_EMS_PPM=/home/baptiste/Bureau/glane/build-qnx/vitrine/web-vga.ppm
 Environment=QNX_EMS_PORT=8101
-Environment=QNX_EMS_TITRE=Glane sur QNX 8.0
-Environment=QNX_EMS_NOTE=invité QNX 8.0 (QEMU/TCG) — glaned publie ses mesures dans /dev/shmem
+Environment="QNX_EMS_TITRE=Glane sur QNX 8.0"
+Environment="QNX_EMS_NOTE=invité QNX 8.0 (QEMU/TCG) — glaned publie ses mesures dans /dev/shmem"
 ExecStart=/usr/bin/python3 %h/Bureau/qnx-emu/web.py
 Restart=always
 RestartSec=5

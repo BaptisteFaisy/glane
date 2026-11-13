@@ -4,28 +4,28 @@ glane-publish: racine publiee = /dev/shmem (plat)
 glaned: 6 mesures publiées pour 'temp-chassis'
 glaned: 60 mesures publiées pour 'imu-accel'
 glaned: 2 mesures publiées pour 'batt-voltage'
-glane-latence: 68 publications, p50=723508 ns, p99=3275492 ns, p99.9=3275492 ns, max=3275492 ns
+glane-latence: 68 publications, p50=439435 ns, p99=2994900 ns, p99.9=2994900 ns, max=2994900 ns
 
 --- objets publies (fichiers reels, ls) ---
 total 0
--rw-r--r--  2 0 0  174 2026-11-13 13:12 batt-voltage.info
--rw-r--r--  2 0 0    6 2026-11-13 13:12 batt-voltage.quality
--rw-r--r--  2 0 0    4 2026-11-13 13:12 batt-voltage.seq
--rw-r--r--  2 0 0   12 2026-11-13 13:12 batt-voltage.ts_ns
--rw-r--r--  2 0 0    4 2026-11-13 13:12 batt-voltage.unit
--rw-r--r--  2 0 0   10 2026-11-13 13:12 batt-voltage.value
--rw-r--r--  2 0 0 5337 2026-11-13 13:12 imu-accel.info
--rw-r--r--  2 0 0  180 2026-11-13 13:12 imu-accel.quality
--rw-r--r--  2 0 0  171 2026-11-13 13:12 imu-accel.seq
--rw-r--r--  2 0 0  583 2026-11-13 13:12 imu-accel.ts_ns
--rw-r--r--  2 0 0  120 2026-11-13 13:12 imu-accel.unit
--rw-r--r--  2 0 0  323 2026-11-13 13:12 imu-accel.value
--rw-r--r--  2 0 0  544 2026-11-13 13:12 temp-chassis.info
--rw-r--r--  2 0 0   18 2026-11-13 13:12 temp-chassis.quality
--rw-r--r--  2 0 0   12 2026-11-13 13:12 temp-chassis.seq
--rw-r--r--  2 0 0   52 2026-11-13 13:12 temp-chassis.ts_ns
--rw-r--r--  2 0 0   12 2026-11-13 13:12 temp-chassis.unit
--rw-r--r--  2 0 0   36 2026-11-13 13:12 temp-chassis.value
+-rw-r--r--  2 0 0  174 2026-11-13 22:30 batt-voltage.info
+-rw-r--r--  2 0 0    3 2026-11-13 22:30 batt-voltage.quality
+-rw-r--r--  2 0 0    2 2026-11-13 22:30 batt-voltage.seq
+-rw-r--r--  2 0 0   10 2026-11-13 22:30 batt-voltage.ts_ns
+-rw-r--r--  2 0 0    2 2026-11-13 22:30 batt-voltage.unit
+-rw-r--r--  2 0 0    5 2026-11-13 22:30 batt-voltage.value
+-rw-r--r--  2 0 0 5337 2026-11-13 22:30 imu-accel.info
+-rw-r--r--  2 0 0    3 2026-11-13 22:30 imu-accel.quality
+-rw-r--r--  2 0 0    3 2026-11-13 22:30 imu-accel.seq
+-rw-r--r--  2 0 0   10 2026-11-13 22:30 imu-accel.ts_ns
+-rw-r--r--  2 0 0    2 2026-11-13 22:30 imu-accel.unit
+-rw-r--r--  2 0 0    5 2026-11-13 22:30 imu-accel.value
+-rw-r--r--  2 0 0  544 2026-11-13 22:30 temp-chassis.info
+-rw-r--r--  2 0 0    3 2026-11-13 22:30 temp-chassis.quality
+-rw-r--r--  2 0 0    2 2026-11-13 22:30 temp-chassis.seq
+-rw-r--r--  2 0 0   10 2026-11-13 22:30 temp-chassis.ts_ns
+-rw-r--r--  2 0 0    2 2026-11-13 22:30 temp-chassis.unit
+-rw-r--r--  2 0 0    6 2026-11-13 22:30 temp-chassis.value
 --- mesures publiees (extrait imu-accel.info) ---
 {"s":"imu-accel","id":2,"seq":56,"ts_ns":550000000,"v_m":5750,"unit":"g","quality":"ok"}
 {"s":"imu-accel","id":2,"seq":57,"ts_ns":560000000,"v_m":6000,"unit":"g","quality":"ok"}
@@ -41,16 +41,16 @@ gwatch[/dev/shmem/imu-accel.value] value=6750  ALARME (seuil=3000)
 gwatch[/dev/shmem/imu-accel.value] value=6750  ALARME (seuil=3000)
 
 --- gestionnaire de ressources /dev/sensors (resmgr QNX) ---
-gsensogsensor_resmgr: ATTACH OK /dev/sensors/temp-chassis (depuis /dev/shmem/temp-chassis.value)
-r_resmgr: /dev/sensors/temp-chassis (pid 77827)
+gsensgsensor_resmgr: ATTACH OK /dev/sensors/temp-chassis (depuis /dev/shmem/temp-chassis.value)
+or_resmgr: /dev/sensors/temp-chassis (pid 77827)
 total 0
--rw-rw-rw-  1 0 0 64 2026-11-13 13:12 temp-chassis
+-rw-rw-rw-  1 0 0 64 2026-11-13 22:30 temp-chassis
 cat /dev/sensors/temp-chassis -> 61944
 
 --- rejeu deterministe SUR LA CIBLE : 2 runs, meme description (GLA-04) ---
 glane-publish: racine publiee = /dev/shmem (plat)
 glaned: 6 mesures publiées pour 'temp-chassis'
-glane-latence: 6 publications, p50=1231720 ns, p99=2948597 ns, p99.9=2948597 ns, max=2948597 ns
+glane-latence: 6 publications, p50=659984 ns, p99=2344562 ns, p99.9=2344562 ns, max=2344562 ns
 REJEU-RUN1 ===
 {"s":"temp-chassis","id":1,"seq":1,"ts_ns":0,"v_m":42500,"unit":"C","quality":"ok"}
 {"s":"temp-chassis","id":1,"seq":2,"ts_ns":100000000,"v_m":46543,"unit":"C","quality":"ok"}
@@ -61,7 +61,7 @@ REJEU-RUN1 ===
 REJEU-RUN1-FIN ===
 glane-publish: racine publiee = /dev/shmem (plat)
 glaned: 6 mesures publiées pour 'temp-chassis'
-glane-latence: 6 publications, p50=679314 ns, p99=1496994 ns, p99.9=1496994 ns, max=1496994 ns
+glane-latence: 6 publications, p50=771060 ns, p99=4877728 ns, p99.9=4877728 ns, max=4877728 ns
 REJEU-RUN2 ===
 {"s":"temp-chassis","id":1,"seq":1,"ts_ns":0,"v_m":42500,"unit":"C","quality":"ok"}
 {"s":"temp-chassis","id":1,"seq":2,"ts_ns":100000000,"v_m":46543,"unit":"C","quality":"ok"}
@@ -77,3 +77,14 @@ glane-publish: racine publiee = /dev/shmem/sensors (plat)
 glaned: mode infini (pas=0) — publication continue
 glaned: mode infini — 100 pas, 10 publications
 gsuper: '/proc/boot/glaned' terminé (reprise #1)
+glane-publish: racine publiee = /dev/shmem/sensors (plat)
+glaned: mode infini (pas=0) — publication continue
+--- glaned a ete tue puis relance par gsuper ---
+name                                                                            
+/proc/boot/procnto-smp-instr                                                    
+proc/boot/gsensor_resmgr                                                        
+proc/boot/gsuper                                                                
+proc/boot/glaned                                                                
+proc/boot/pidin                                                                 
+
+glaned: mode infini — 100 pas, 10 publications

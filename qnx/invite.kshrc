@@ -15,5 +15,8 @@ echo " glaned publie ses mesures dans l'espace de noms de l'invite."
 echo " Derniere mesure publiee (temp-chassis) :"
 tail -n 1 /dev/shmem/temp-chassis.info 2>/dev/null
 echo " Publication en direct : temp-chassis (1 mesure/s, supervisee)."
+echo " La demonstration defile a l'ecran toutes les 8 s."
+echo " Pause de la demo :  echo pause > /dev/shmem/arret      (puis Entree)"
+echo " Reprise :           rm /dev/shmem/arret"
 echo " Exemples : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
 echo "=============================================================="

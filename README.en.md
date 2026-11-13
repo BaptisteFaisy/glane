@@ -214,7 +214,7 @@ publication part, in `qnx/capture/runtime-glaned.txt`).
 | **3 sensors published at 3 different rates** (temp-chassis 100 ms, imu-accel 10 ms, batt-voltage 500 ms) | `glaned: 6 mesures publiées pour 'temp-chassis'`, `60 … pour 'imu-accel'`, `2 … pour 'batt-voltage'` |
 | Published objects exist as real files in the guest namespace | `ls -l /dev/shmem` → `temp-chassis.value`, `.quality`, `.seq`, `.ts_ns`, `.unit`, `.info` (same for the two other sensors) |
 | Timestamped measurements | `tail -n 5 /dev/shmem/imu-accel.info` → `{"s":"imu-accel","id":2,"seq":56,"ts_ns":550000000,"v_m":5750,"unit":"g","quality":"ok"}` |
-| **Latency measured on the target** | `glane-latence: 68 publications, p50=723508 ns, p99=3275492 ns, p99.9=3275492 ns, max=3275492 ns` — each publish call bracketed by two `ClockTime(CLOCK_MONOTONIC)` reads inside the guest |
+| **Latency measured on the target** | `glane-latence: 68 publications, p50=439435 ns, p99=2994900 ns, p99.9=2994900 ns, max=2994900 ns` — each publish call bracketed by two `ClockTime(CLOCK_MONOTONIC)` reads inside the guest |
 | **Deterministic replay, measured on the target** | the same description is published twice inside the guest; the capture script extracts both blocks (`REJEU-RUN1` / `REJEU-RUN2`) and compares them byte for byte: `rejeu : IDENTIQUES octet pour octet (6 mesures comparées, rejouées DANS QNX 8.0)` |
 | A **QNX resource manager** exposing the sensor | `ATTACH OK /dev/sensors/temp-chassis (depuis /dev/shmem/temp-chassis.value)`, then `/dev/sensors/temp-chassis (pid 77827)` |
 | The published value is readable by any client | `cat /dev/sensors/temp-chassis -> 61944` |

@@ -22,6 +22,11 @@ extern "C" {
 
 #define GLANE_PUBLISH_LEAVES 6   /* value, quality, seq, ts_ns, unit, info  */
 
+/* Taille du cache « dernier contenu écrit » par feuille. Les feuilles
+ * scalaires sont courtes (valeur, qualité, séquence, horodatage, unité) ;
+ * 64 octets suffisent largement. */
+#define LEAF_CACHE_MAX 64
+
 typedef struct {
     const glane_desc *desc;   /* description du capteur publié            */
     int opened;               /* 1 si ouvert avec succès                  */
@@ -31,6 +36,10 @@ typedef struct {
     char root[160];           /* racine publiée (ex. /sensors)           */
     int out_fd;               /* repli stdout si use_files == 0          */
     unsigned long published;  /* compteur de mesures publiées             */
+    long info_bytes;          /* taille du journal `info` (borne)         */
+    int reuse_fds;            /* 1 = réécrire en place (pwrite+ftruncate)  */
+    size_t leaf_len[GLANE_PUBLISH_LEAVES]; /* taille de chaque feuille       */
+    char leaf_cache[GLANE_PUBLISH_LEAVES][LEAF_CACHE_MAX]; /* dernier contenu */
 } glane_publisher;
 
 /* Ouvre la publication pour un capteur : crée <root>/<name>/{value,quality,

@@ -138,8 +138,8 @@ qemu-system-x86_64 -kernel build-qnx/glane-ifs.bin -m 512 -smp 1 -cpu max \
   no root is writable at all, the publisher falls back to stdout and says so.
 - **Measuring on the target is what actually counts.** On the guest,
   publication latency is dominated by the file writes into the namespace: over
-  the recorded runs, p50 stayed between **679 314 ns and 1 231 720 ns**, and
-  the worst p99 reached **3 275 492 ns**. The target number brackets each publish
+  the recorded runs, p50 stayed between **439 435 ns and 771 060 ns**, and
+  the worst p99 reached **4 877 728 ns**. The target number brackets each publish
   call with two `ClockTime(CLOCK_MONOTONIC)` reads; the host bench (`glat`)
   measures delivery latency from the journal (`d_ns` − `ts_ns`), which in the
   host simulator is an injected, fixed value — the two are different measures
@@ -183,7 +183,7 @@ qemu-system-x86_64 -kernel build-qnx/glane-ifs.bin -m 512 -smp 1 -cpu max \
 - **Three sensors at three different rates, published together.** One run
   published **68** measurements — 6 for `temp-chassis` (100 ms), 60 for
   `imu-accel` (10 ms), 2 for `batt-voltage` (500 ms) — with a measured
-  publication latency of p50 = **723 508 ns**, p99 = **3 275 492 ns**.
+  publication latency of p50 = **439 435 ns**, p99 = **2 994 900 ns**.
 - **Deterministic replay, on the host and on the target.** Two runs of the
   publisher with the same seed produce byte-identical journals.
 
@@ -245,8 +245,8 @@ screen and what is said.
 | Guest OS proof (`sysname=QNX release=8.0.0 …`) | `qnx/capture/runtime-uname.txt` |
 | Toolchain (`qcc 12.2.0`, `gcc_ntox86_64`), compile command, zero warning | `qnx/capture/build-proof.txt`, `qnx/build.sh` |
 | Boot command, image build, replay instructions | `qnx/capture/runtime-howto.md`, `qnx/glane-ifs.build` |
-| 3 sensors / 68 measurements, p50 = 723 508 ns, p99 = 3 275 492 ns, published objects, `gwatch` alarm, `resmgr` attach, `cat /dev/sensors/…` → 61944, restart sequence `reprise #1` | `qnx/capture/runtime-glaned.txt`, `qnx/capture/runtime-console.txt` |
-| p50 range 679 314–1 231 720 ns, p99 up to 3 275 492 ns | `qnx/capture/runtime-console.txt` (the three latency reports of the capture) |
+| 3 sensors / 68 measurements, p50 = 439 435 ns, p99 = 2 994 900 ns, published objects, `gwatch` alarm, `resmgr` attach, `cat /dev/sensors/…` → 61944, restart sequence `reprise #1` | `qnx/capture/runtime-glaned.txt`, `qnx/capture/runtime-console.txt` |
+| p50 range 439 435–771 060 ns, p99 up to 4 877 728 ns | `qnx/capture/runtime-console.txt` (the three latency reports of the capture) |
 | Deterministic replay on the target (`REJEU-RUN1` / `REJEU-RUN2` compared byte for byte) | `qnx/capture/runtime-console.txt`, `qnx/capture/runtime-howto.md`, `qnx/run-glane-qemu.sh` |
 | Codelab of 4 chapters | `docs/GLANE-codelab.md` |
 | Publication roots, flat-layout fallback, stdout fallback | `publish/qnx/glane_publish.c` |

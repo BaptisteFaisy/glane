@@ -32,6 +32,7 @@
 [+script] startup-script = {
     procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
     PATH=/proc/boot:/usr/bin:/bin LD_LIBRARY_PATH=/proc/boot:/usr/lib
+    pipe
     devc-con
     devc-ser8250 -e
     waitfor /dev/ser1
@@ -76,8 +77,11 @@
     echo " Voici un vrai systeme QNX : shell ksh interactif."
     echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
     echo "=============================================================="
-    # --- la VITRINE : l'ecran VGA montre les mesures de Glane ---------
-    on -t /dev/con1 -e HOME=/proc/boot ksh -c "echo '--- Glane sur QNX 8.0 : mesures publiees ---'; cat /dev/shmem/temp-chassis.info; cat /dev/shmem/imu-accel.info"
+    # --- la VITRINE : la demo SE JOUE SUR L'ECRAN (con1 = VGA) ---------
+    # La boucle relit a chaque cycle l'etat reel de la publication ; le shell
+    # interactif tourne sur la meme console (la frappe s'insere entre cycles).
+    # Le visiteur peut couper la boucle :  echo pause > /dev/shmem/arret
+    on -d -t /dev/con1 ksh /proc/boot/demo-vitrine.sh
     # --- puis l'invite interactive sur la MEME console VGA -------------
     on -d -t /dev/con1 -e HOME=/proc/boot ksh /proc/boot/invite.sh
 }
@@ -97,11 +101,19 @@ cat = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/cat
 tail = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/tail
 mkdir = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/mkdir
 sleep = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sleep
+printf = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/printf
+clear = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/clear
+head = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/head
+wc = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/wc
 pidin = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/pidin
 ksh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/ksh
 sh = /home/baptiste/Bureau/glane/build-qnx/ifsbin/usr/bin/sh
 
-# --- pilotes de console (VGA + serie) -----------------------------------
+# --- pilotes de console (VGA + serie) + gestionnaire de tubes ------------
+# `pipe` fournit /dev/pipe : sans lui, le shell ne peut ni faire de
+# substitution de commande ($(...)) ni de pipeline -> la demo affiche "can't
+# create pipe". C'est ce qui manquait au premier essai.
+pipe = /home/baptiste/qnx800/target/qnx/x86_64/sbin/pipe
 devc-con = /home/baptiste/qnx800/target/qnx/x86_64/sbin/devc-con
 devc-ser8250 = /home/baptiste/qnx800/target/qnx/x86_64/sbin/devc-ser8250
 on = /home/baptiste/qnx800/target/qnx/x86_64/bin/on
@@ -113,7 +125,8 @@ temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.js
 imu-accel.json = /home/baptiste/Bureau/glane/core/tests/valid/imu-accel.json
 batt-voltage.json = /home/baptiste/Bureau/glane/core/tests/valid/batt-voltage.json
 
-# --- invite interactive (script ksh de la console VGA) -------------------
+# --- invite interactive + scenario de demonstration (console VGA) --------
+demo-vitrine.sh = /home/baptiste/Bureau/glane/qnx/demo-vitrine.sh
 invite.sh = /home/baptiste/Bureau/glane/qnx/invite.sh
 invite.kshrc = /home/baptiste/Bureau/glane/qnx/invite.kshrc
 

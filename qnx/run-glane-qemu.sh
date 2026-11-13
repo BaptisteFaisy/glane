@@ -46,7 +46,9 @@ qcc -V gcc_ntox86_64 -std=c11 -O2 \
 cp "$TGT/usr/lib/ldqnx-64.so.2" "$OUT/ifsbin/usr/lib/"
 # Outils : toybox dispatche sur argv[0] -> une copie par nom d'appel.
 # (mkifs refuse le mélange 'nom = chemin' et [type=link].)
-for t in echo uname ls cat tail mkdir sleep; do
+# printf + clear : indispensables au tableau de bord de la vitrine (devc-con
+# comprend les suites ANSI, mais toybox doit etre present sous ce nom).
+for t in echo uname ls cat tail mkdir sleep printf clear head wc; do
     [ -f "$TGT/usr/bin/toybox" ] && cp "$TGT/usr/bin/toybox" "$OUT/ifsbin/usr/bin/$t"
 done
 for t in ksh sh; do

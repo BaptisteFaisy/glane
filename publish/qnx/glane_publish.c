@@ -26,6 +26,12 @@
 
 #define PUBLISH_ROOT_DEFAULT "/sensors"
 
+/* Journal `info` : on ne garde que les DERNIERES lignes. Sans borne, un
+ * publisher qui tourne en continu fait croitre le tmpfs de l'invite sans fin
+ * (la capture de la vitrine montrait deja 1 200 lignes et counting). */
+#define INFO_MAX_BYTES 8192
+#define INFO_KEEP_LINES 16
+
 static const char *const leaves[GLANE_PUBLISH_LEAVES] = {
     "value", "quality", "seq", "ts_ns", "unit", "info",
 };
@@ -89,6 +95,114 @@ static void leaf_path(const glane_publisher *p, int i, char *buf, size_t bufsz)
     }
 }
 
+/* Réécrit une feuille en place : le descripteur reste OUVERT.
+ *
+ * Deux contraintes :
+ *  - CONTRACT.md §6 : une feuille porte l'état COURANT du capteur, pas un
+ *    historique. Rouvrir le fichier à chaque écriture (close + open +
+ *    write) marchait, mais coûte 5 open()+close() par mesure sur le tmpfs
+ *    de l'invité : mesuré sur QNX 8.0, la latence de publication est
+ *    passée de p50 = 0,72 ms à p50 = 3,65 ms (×5) après ce correctif.
+ *  - donc on réécrit EN PLACE, en une écriture positionnée (pwrite) et une
+ *    troncature (ftruncate) — l'ordre dépend de si la valeur rétrécit ou
+ *    grandit : on n'écrit JAMAIS dans un objet plus petit que la donnée.
+ *
+ * ftruncate/pwrite ne sont pas garantis par tous les systèmes de fichiers :
+ * si l'appel échoue, on retombe une fois pour toutes sur la réouverture
+ * (chemin correct, plus lent) et on le signale.
+ */
+static void put_leaf(glane_publisher *p, int i, const char *text)
+{
+    size_t len;
+    int ok = 0;
+    if (p->fds[i] < 0 || text == NULL) {
+        return;
+    }
+    len = strlen(text);
+    if (p->reuse_fds) {
+        /* Feuilles constantes (qualité, unité) : rien à réécrire si le
+         * contenu n'a pas bougé — 2 écritures syscall en moins par mesure. */
+        if (len <= LEAF_CACHE_MAX &&
+            p->leaf_len[i] == len &&
+            memcmp(p->leaf_cache[i], text, len) == 0) {
+            return;
+        }
+        if (len >= p->leaf_len[i]) {
+            /* la valeur grandit : fixer la taille AVANT d'écrire */
+            ok = (ftruncate(p->fds[i], (off_t)len) == 0 &&
+                  pwrite(p->fds[i], text, len, 0) == (ssize_t)len);
+        } else {
+            /* la valeur rétrécit : écrire d'abord, tronquer ensuite */
+            ok = (pwrite(p->fds[i], text, len, 0) == (ssize_t)len &&
+                  ftruncate(p->fds[i], (off_t)len) == 0);
+        }
+        if (ok) {
+            p->leaf_len[i] = len;
+            if (len <= LEAF_CACHE_MAX) {
+                memcpy(p->leaf_cache[i], text, len);
+            }
+            return;
+        }
+        /* ftruncate/pwrite indisponibles ici : repli en réouverture. */
+        p->reuse_fds = 0;
+        fprintf(stderr, "glane-publish: reecriture en place impossible "
+                        "(feuille %s) — repli en reouverture\n", leaves[i]);
+    }
+    {
+        char path[512];
+        leaf_path(p, i, path, sizeof path);
+        close(p->fds[i]);
+        p->fds[i] = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (p->fds[i] < 0) {
+            return;
+        }
+        put(p->fds[i], text);
+        p->leaf_len[i] = len;
+    }
+}
+
+/* Compacte le journal `info` : on ne garde que les dernieres lignes. Relit
+ * le fichier, recupere les N dernieres lignes, le reecrit a zero. */
+static void compact_info(glane_publisher *p)
+{
+    static char buf[INFO_MAX_BYTES + 512];
+    char path[512];
+    long n;
+    long start = 0;
+    int kept = 0;
+    leaf_path(p, 5, path, sizeof path);
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        return;
+    }
+    n = read(fd, buf, sizeof buf - 1);
+    close(fd);
+    if (n <= 0) {
+        return;
+    }
+    buf[n] = '\0';
+    /* Balaye a rebours pour trouver le debut de la INFO_KEEP_LINES-ieme
+     * derniere ligne. */
+    for (long i = n - 1; i >= 0; i--) {
+        if (buf[i] == '\n' && i + 1 < n) {
+            kept++;
+            if (kept >= INFO_KEEP_LINES) {
+                start = i + 1;
+                break;
+            }
+        }
+    }
+    if (p->fds[5] >= 0) {
+        close(p->fds[5]);
+    }
+    p->fds[5] = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (p->fds[5] < 0) {
+        return;
+    }
+    put(p->fds[5], buf + start);
+    p->info_bytes = n - start;
+}
+
 /* Tente d'ouvrir les feuilles dans une racine donnée. Retourne 1 si la
  * publication fichier est en place, 0 sinon (racine suivante à essayer). */
 static int try_root(glane_publisher *p, const char *root)
@@ -126,6 +240,9 @@ int glane_publish_open(glane_publisher *p, const glane_desc *d)
     memset(p, 0, sizeof *p);
     p->desc = d;
     p->out_fd = 1;
+    /* Réécriture en place des feuilles (pwrite + ftruncate) : évite 5
+     * open()+close() par mesure, qui coûtaient ×5 en latence sur QNX. */
+    p->reuse_fds = 1;
     for (int i = 0; i < GLANE_PUBLISH_LEAVES; i++) {
         p->fds[i] = -1;
     }
@@ -169,16 +286,18 @@ int glane_publish_sample(glane_publisher *p, const glane_sample *s)
         p->published++;
         return 0;
     }
+    /* Feuilles scalaires : l'etat COURANT (tronque a chaque ecriture). */
     snprintf(buf, sizeof buf, "%d\n", (int)s->value_milli);
-    put(p->fds[0], buf);
+    put_leaf(p, 0, buf);
     snprintf(buf, sizeof buf, "%s\n", glane_quality_name(s->quality));
-    put(p->fds[1], buf);
+    put_leaf(p, 1, buf);
     snprintf(buf, sizeof buf, "%u\n", (unsigned)s->seq);
-    put(p->fds[2], buf);
+    put_leaf(p, 2, buf);
     snprintf(buf, sizeof buf, "%lld\n", (long long)s->ts_ns);
-    put(p->fds[3], buf);
+    put_leaf(p, 3, buf);
     snprintf(buf, sizeof buf, "%s\n", glane_unit_name(s->unit));
-    put(p->fds[4], buf);
+    put_leaf(p, 4, buf);
+    /* Journal `info` : appende, puis borne (les N dernieres lignes). */
     snprintf(buf, sizeof buf,
              "{\"s\":\"%s\",\"id\":%u,\"seq\":%u,\"ts_ns\":%lld,\"v_m\":%d,"
              "\"unit\":\"%s\",\"quality\":\"%s\"}\n",
@@ -186,6 +305,10 @@ int glane_publish_sample(glane_publisher *p, const glane_sample *s)
              (long long)s->ts_ns, (int)s->value_milli,
              glane_unit_name(s->unit), glane_quality_name(s->quality));
     put(p->fds[5], buf);
+    p->info_bytes += (long)strlen(buf);
+    if (p->info_bytes > INFO_MAX_BYTES) {
+        compact_info(p);
+    }
     p->published++;
     return 0;
 }
