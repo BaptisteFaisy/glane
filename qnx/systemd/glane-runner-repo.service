@@ -1,0 +1,17 @@
+[Unit]
+Description=GitHub Actions Runner pc-qnx-repo (Tradoooo/glane — job QNX 8.0)
+Documentation=https://github.com/Tradoooo/glane
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/baptiste/.glane-runner2
+ExecStart=/home/baptiste/.glane-runner2/run.sh
+Restart=always
+RestartSec=10
+TimeoutStopSec=30
+KillMode=mixed
+
+[Install]
+WantedBy=default.target

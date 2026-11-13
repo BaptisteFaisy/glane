@@ -115,3 +115,10 @@ main) : voir `image/mkifs.fragment` + le **Custom Target Image (CTI) Guide**
 Rien ici ne casse le build Linux : la CI (`make test`, `make asan`, `make
 sizecheck`, `make host-test`) reste verte, le code QNX étant confiné derrière
 `#ifdef __QNX__` et hors des cibles compilées par le Makefile hôte.
+
+## Runner self-hosted (job `QNX Build`)
+
+Le job QNX tourne sur ce poste via un runner GitHub Actions auto-heberge.
+Etat, pieges (runner d'organisation « offline/busy », bibliotheques du SDP
+zeroees par un processus de l'hote) et commandes de reparation :
+[`RUNNER.md`](RUNNER.md).
