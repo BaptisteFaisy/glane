@@ -260,7 +260,11 @@
     ["docs/GLANE-100-idees-aller-plus-loin.md", "100 idées", "4 lots de 25 idées neuves ; les 10 meilleures implémentées"],
     ["docs/GLANE-traceabilite.md", "Traçabilité", "matrice exigences → tests (générée par glane_trace)"],
     ["CONTRACT.md", "Contrat gelé", "ABI de la mesure, calibration, schéma publié, journal"],
-    ["README.md", "README", "construire, tester, démo express"]
+    ["README.md", "README", "construire, tester, démo express"],
+    ["README.en.md", "README (anglais)", "version anglaise pour les juges du concours"],
+    ["docs/GLANE-codelab.md", "Codelab (4 chapitres)", "décrire → publier (virtuel) → publier sur QNX 8.0 → le contrat d'un capteur réel (GLA-18)"],
+    ["docs/DEVPOST.md", "Soumission Devpost (anglais)", "texte prêt à coller : inspiration, ce que ça fait, épreuves, sources"],
+    ["qnx/capture/vitrine-vga.png", "Capture de l'invité QNX 8.0", "écran VGA réel de l'invité (bannière + invite), prélevé sur l'émulateur"]
   ];
   function renderDocs() {
     $("docs-links").innerHTML = DOCS.map(function (d) {
