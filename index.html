@@ -176,6 +176,31 @@
   <pre class="code" id="qnx-build-proof"></pre>
 
   <div id="qnx-runtime"></div>
+
+  <h3>L'invité QNX 8.0, en direct <span class="hint">(vitrine web)</span></h3>
+  <p class="lead">Sur le poste de travail <code>pc</code>, un invité <strong>QNX 8.0
+  réel</strong> tourne sous QEMU : <code>glaned</code> y publie ses mesures dans
+  <code>/dev/shmem</code>, un gestionnaire de ressources QNX les réexpose dans
+  <code>/dev/sensors</code>, et un shell <code>ksh</code> attend les touches
+  envoyées par les boutons ci-dessous. La capture de gauche est la console VGA
+  de l'invité ; à droite, la console série où se déroule la publication.</p>
+  <div class="qnx-live">
+    <img id="qnx-live-screen" alt="écran de l'invité QNX 8.0 de Glane"
+         src="https://baptiste-ms-7d18.tail3a8bdf.ts.net:10000/screen.png">
+    <div class="qnx-live-side">
+      <div class="keys">
+        <button data-k="ret">Entrée</button><button data-k="spc">Espace</button>
+        <button data-k="l">l</button><button data-k="c">c</button>
+        <button data-k="tab">Tab</button><button data-k="cr">Ctrl-C</button>
+      </div>
+      <pre id="qnx-live-console" class="journal">connexion…</pre>
+    </div>
+  </div>
+  <p class="small">Vitrine : <a href="https://baptiste-ms-7d18.tail3a8bdf.ts.net:10000"
+  rel="noopener">baptiste-ms-7d18.tail3a8bdf.ts.net:10000</a> — invite amorcée par
+  <code>-kernel</code> sur l'IFS <code>build-qnx/glane-vitrine-ifs.bin</code>,
+  sans disque ni réseau. Dans l'invité :
+  <code>ls /dev/shmem</code>, <code>cat /dev/shmem/temp-chassis.info</code>.</p>
 </section>
 
 <!-- ============================ FONCTIONNALITÉS ============================ -->
@@ -318,11 +343,37 @@
   <a href="https://github.com/Tradoooo/glane">dépôt</a> ·
   <a href="https://github.com/Tradoooo/glane/actions">CI</a></p>
   <p class="small">Cette page ne charge aucune ressource externe : pas de CDN,
-  pas de police tierce, pas de mesure d'audience.</p>
+  pas de police tierce, pas de mesure d'audience. Seule exception : la capture
+  et la console de l'invité QNX 8.0 ci-dessus, servies par le poste
+  <code>pc</code> (la vitrine du projet).</p>
 </footer>
 
 <script src="data.js"></script>
 <script src="demo.js"></script>
 <script src="app.js"></script>
+<script>
+/* Vitrine QNX 8.0 en direct : capture VGA + console série + touches.
+   Le service est sur le poste `pc` (tailscale funnel), CORS ouvert. */
+(function () {
+  var API = "https://baptiste-ms-7d18.tail3a8bdf.ts.net:10000";
+  var img = document.getElementById("qnx-live-screen");
+  var out = document.getElementById("qnx-live-console");
+  if (!img || !out) { return; }
+  function tick() {
+    img.src = API + "/screen.png?t=" + Date.now();
+    fetch(API + "/console").then(function (r) { return r.text(); }).then(function (t) {
+      out.textContent = t; out.scrollTop = out.scrollHeight;
+    }).catch(function () { out.textContent = "(vitrine hors ligne)"; });
+  }
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".qnx-live .keys button"), function (b) {
+      b.onclick = function () {
+        fetch(API + "/key?k=" + encodeURIComponent(b.dataset.k));
+      };
+    });
+  setInterval(tick, 2000);
+  tick();
+})();
+</script>
 </body>
 </html>

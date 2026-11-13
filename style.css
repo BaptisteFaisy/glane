@@ -98,6 +98,20 @@ pre.code { background: var(--code); border: 1px solid var(--line); border-radius
   padding: .8rem .9rem; overflow-x: auto; font-size: .82rem; line-height: 1.5; }
 button.small { width: auto; padding: .15rem .5rem; font-size: .78rem; margin: 0 .3rem; }
 
+/* ---------- vitrine QNX en direct ---------- */
+.qnx-live { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: .8rem; margin: .6rem 0; }
+@media (max-width: 860px) { .qnx-live { grid-template-columns: 1fr; } }
+.qnx-live img { width: 100%; height: 300px; object-fit: contain; background: #000;
+  border: 1px solid var(--line); border-radius: 8px; }
+.qnx-live-side { display: flex; flex-direction: column; gap: .5rem; }
+.qnx-live .keys { display: flex; flex-wrap: wrap; gap: .35rem; }
+.qnx-live .keys button { background: var(--panel2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: .3rem .6rem;
+  cursor: pointer; font: inherit; font-size: .82rem; }
+.qnx-live .keys button:hover { border-color: var(--accent); }
+.qnx-live .journal { flex: 1; min-height: 230px; max-height: 300px; }
+
 /* ---------- grille de fonctionnalités ---------- */
 .filter { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 1rem; }
 .filter button { background: var(--panel2); color: var(--muted); border: 1px solid var(--line);
