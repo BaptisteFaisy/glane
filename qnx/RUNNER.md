@@ -8,13 +8,41 @@ Actions auto-hébergé, en service systemd utilisateur.
 
 | Élément | Valeur |
 |---|---|
-| Nom | `pc-qnx-repo` (id 22, **au niveau du dépôt** `Tradoooo/glane`) |
-| Libellés | `self-hosted`, `Linux`, `X64`, `qnx` (le workflow demande `[self-hosted, qnx]`) |
+| Nom | `pc-qnx-repo` (id 23, **au niveau du dépôt** `Tradoooo/glane`) |
+| Libellés | `self-hosted`, `Linux`, `X64`, `qnx`, **`glane-qnx`** |
 | Répertoire | `~/.glane-runner2` |
 | Unité | `glane-runner-repo.service` (copie versionnée dans `qnx/systemd/`) |
+| Script de lancement | `~/.glane-runner2/run.sh` (versionné : `qnx/systemd/glane-runner-repo-run.sh`) |
 | Version du runner | 2.338.2 |
 
-## Piège n°1 — runner d'organisation « offline/busy » (split-brain)
+## Piège n°1 — le label `qnx` ne suffit pas (runner d'organisation pris par défaut)
+
+Le workflow demande `runs-on: [self-hosted, qnx]`. Or le libellé `qnx` est
+aussi porté par le runner **d'organisation** `pc-qnx` (id 21), qui tourne sur
+le **r630** : il a le SDP QNX mais **pas QEMU**. Le job était donc pris par
+le r630 et échouait sur « `qemu-system-x86_64` : commande introuvable » —
+alors que le runner du dépôt (sur le poste, qui a QEMU) était libre.
+
+Le libellé `glane-qnx`, **dédié au dépôt**, lève l'ambiguïté : le workflow
+demande `[self-hosted, glane-qnx]` et seul `pc-qnx-repo` peut le prendre.
+
+```sh
+# ajouter le libellé dédié (une fois)
+gh api -X POST repos/Tradoooo/glane/actions/runners/23/labels \
+  --input - <<< '{"labels": ["glane-qnx"]}'
+```
+
+Le runner a aussi été **supprimé** du poste par un nettoyage d'un autre agent
+(`~/.glane-runner2` et `~/.glane-runner` ont disparu) : il a fallu le
+réenregistrer (jeton `registration-token`, portée `repo`). Id 22 → id 23.
+
+## Piège n°2 — le PATH du service doit contenir `/usr/bin`
+
+Le service systemd lance le runner avec un PATH minimal : sans `/usr/bin`,
+QEMU n'est pas trouvé et le job échoue sur une erreur trompeuse. D'où le
+script `run.sh` versionné, qui exporte le PATH avant de lancer le runner.
+
+## Piège n°3 — runner d'organisation « offline/busy » (split-brain)
 
 Le runner d'origine (`pc-qnx`, id 21) était enregistré **au niveau de
 l'organisation** `Tradoooo`. Un redémarrage de service l'a tué **en plein job** :
@@ -25,9 +53,8 @@ pas. Le retrait propre demande un jeton `remove-token` **org** (`admin:org`),
 que le compte n'a pas.
 
 Solution retenue : enregistrer un runner **au niveau du dépôt** (jeton
-`repos/Tradoooo/glane/actions/runners/registration-token`, portée `repo`), avec
-les mêmes libellés. Il prend les jobs tout de suite, sans toucher à
-l'organisation. L'ancien runner d'organisation reste « offline » (inoffensif).
+`repos/Tradoooo/glane/actions/runners/registration-token`, portée `repo`).
+Il prend les jobs tout de suite, sans toucher à l'organisation.
 
 ```sh
 # (une seule fois) enregistrement
@@ -38,7 +65,7 @@ cd ~/.glane-runner2
 systemctl --user enable --now glane-runner-repo.service
 ```
 
-## Piège n°2 — bibliothèques du SDP zéroées par un processus de l'hôte
+## Piège n°4 — bibliothèques du SDP zéroées par un processus de l'hôte
 
 Le 13/11 à 14:44, **9 fichiers du SDP** ont été remis à zéro (**taille 0,
 mode 000**) par un processus de nettoyage du poste (non identifié ; le disque

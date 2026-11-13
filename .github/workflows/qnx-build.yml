@@ -15,9 +15,12 @@ concurrency:
 
 jobs:
   qnx-build:
-    # `self-hosted` + `qnx` : seuls les runners auto-hébergés portant le label
-    # `qnx` correspondent. Les runners GitHub hébergés ne matchent jamais.
-    runs-on: [self-hosted, qnx]
+    # `self-hosted` + `glane-qnx` : le label DEDIE au dépôt. Le label `qnx`
+    # seul ne suffit pas — il est aussi porté par le runner d'organisation
+    # `pc-qnx` (hébergé sur le r630), qui a le SDP QNX mais PAS QEMU : le job
+    # y échouait sur « qemu-system-x86_64 : commande introuvable », alors que
+    # le runner du dépôt (pc-qnx-repo, sur le poste qui a QEMU) était libre.
+    runs-on: [self-hosted, glane-qnx]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
