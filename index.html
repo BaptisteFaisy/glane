@@ -194,8 +194,9 @@
                aria-label="commande à envoyer à l'invité QNX">
         <button type="submit">Envoyer ⏎</button>
         <button type="button" data-k="cr">Ctrl-C</button>
-        <button type="button" data-k="tab">Tab</button>
         <button type="button" data-k="spc">Espace</button>
+        <button type="button" id="qnx-pause" title="geler le tableau de bord">⏸ Pause démo</button>
+        <button type="button" id="qnx-rep" title="reprendre le tableau de bord">▶ Reprendre</button>
       </form>
       <p class="small" id="qnx-cmd-etat">Exemples : <code>ls /dev/shmem</code> ·
       <code>cat /dev/shmem/temp-chassis.info</code> · <code>ls /dev/sensors</code></p>
@@ -382,6 +383,16 @@
   var form = document.getElementById("qnx-cmd");
   var champ = document.getElementById("qnx-cmd-t");
   var etat = document.getElementById("qnx-cmd-etat");
+  /* Pause / reprise du tableau de bord affiche sur l'ecran de l'invite. */
+  function cmd(c) {
+    fetch(API + "/type?t=" + encodeURIComponent(c) + "&ret=1")
+      .then(function (r) { return r.text(); })
+      .then(function (x) { etat.textContent = x; });
+  }
+  var pa = document.getElementById("qnx-pause");
+  if (pa) { pa.onclick = function () { cmd("echo pause > /dev/shmem/arret"); }; }
+  var rp = document.getElementById("qnx-rep");
+  if (rp) { rp.onclick = function () { cmd("rm /dev/shmem/arret"); }; }
   if (form && champ) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
