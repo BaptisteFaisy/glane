@@ -1,7 +1,7 @@
 # Capture d'exécution Glane sur QNX 8.0 (émulateur)
 
-Date : 2026-11-13 00:25:02 CET
-Hôte : Linux 6.14.0-37-generic x86_64 GNU/Linux
+Date : 2026-11-13 14:12:47 CET
+Hôte : Linux 7.0.0-43-generic x86_64 GNU/Linux
 Outil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`
 
 ## Image amorcée
@@ -9,7 +9,7 @@ Outil QNX : qcc 12.2.0 (SDP 8.0), variante `gcc_ntox86_64`
 qemu-system-x86_64 -kernel build-qnx/glane-ifs.bin -m 512 -smp 1 -cpu max \
   -display none -vga none -serial file:build-qnx/qnx-console.log -no-reboot
 ```
-IFS minimale (2,3 Mo, sans disque) construite par `qnx/glane-ifs.build` :
+IFS minimale (5,7M, sans disque) construite par `qnx/glane-ifs.build` :
 procnto-smp-instr + startup-x86 (console série 115200) + glaned + qnxproof.
 
 ## Preuve d'OS (uname exécuté DANS l'invité)
@@ -26,8 +26,9 @@ procnto-smp-instr + startup-x86 (console série 115200) + glaned + qnxproof.
 ```
 
 ## Rejeu déterministe (GLA-04)
-Deux exécutions de `glaned` avec la même graine (42) dans le même QNX :
-**IDENTIQUES octet pour octet (rejeu déterministe confirmé sur QNX 8.0)** — 5 lignes de mesure au total.
+Deux exécutions de `glaned` avec la MÊME description, rejouées DANS l'invité
+QNX 8.0 (graine dérivée de l'index du capteur, donc identique à chaque run) :
+**IDENTIQUES octet pour octet (6 mesures comparées, rejouées DANS QNX 8.0)**
 
 ## Rejouer
 ```sh

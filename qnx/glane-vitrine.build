@@ -62,12 +62,15 @@
     cat /dev/sensors/temp-chassis
     echo
     echo "--- superviseur (HAM de poche) : on tue glaned, il est relance ---"
-    gsuper /proc/boot/glaned 99999 /proc/boot/temp-chassis.json
-    sleep 2
+    GLANE_SENSOR_DIR=/dev/shmem gsuper -m 3 /proc/boot/glaned 0 /proc/boot/vitrine-temp-chassis.json
+    sleep 3
     slay glaned
     sleep 2
     echo "--- glaned a ete tue puis relance par gsuper ---"
     pidin -F "%n"
+    echo
+    echo "--- le publisher vit : mesure en direct (1/s, seq croissante) ---"
+    cat /dev/shmem/temp-chassis.info
     echo
     echo "=============================================================="
     echo " Voici un vrai systeme QNX : shell ksh interactif."
@@ -105,6 +108,7 @@ on = /home/baptiste/qnx800/target/qnx/x86_64/bin/on
 slay = /home/baptiste/qnx800/target/qnx/x86_64/bin/slay
 
 # --- donnees de demonstration -------------------------------------------
+vitrine-temp-chassis.json = /home/baptiste/Bureau/glane/qnx/vitrine-temp-chassis.json
 temp-chassis.json = /home/baptiste/Bureau/glane/core/tests/valid/temp-chassis.json
 imu-accel.json = /home/baptiste/Bureau/glane/core/tests/valid/imu-accel.json
 batt-voltage.json = /home/baptiste/Bureau/glane/core/tests/valid/batt-voltage.json

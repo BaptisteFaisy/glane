@@ -81,14 +81,18 @@ grep -a '^\[QNX-PROOF\]' "$CONSOLE" > "$CAP/runtime-uname.txt" || true
 # Section "publication réelle" : message du publisher + ls des objets + valeurs
 awk '/glane-publish:/{f=1} f' "$CONSOLE" | awk '/^=====/{exit} {print}' > "$CAP/runtime-glaned.txt" || true
 grep -a '^{"s":' "$CONSOLE" | head -20 > "$CAP/runtime-journal.jsonl" || true
-# verdict de rejeu déterministe : les 2 runs doivent être identiques
-TOTAL=$(grep -ac '^{"s":' "$CONSOLE" || echo 0)
-grep -a '^{"s":' "$CONSOLE" | head -20 > /tmp/glane-run1.jsonl
-grep -a '^{"s":' "$CONSOLE" | tail -20 > /tmp/glane-run2.jsonl
-if cmp -s /tmp/glane-run1.jsonl /tmp/glane-run2.jsonl; then
-    DET="IDENTIQUES octet pour octet (rejeu déterministe confirmé sur QNX 8.0)"
+# verdict de rejeu déterministe : les 2 runs REJOUÉS DANS L'INVITÉ sont
+# comparés octet pour octet (les blocs REJEU-RUN1 / REJEU-RUN2 du guest).
+rm -f /tmp/glane-rejeu1.txt /tmp/glane-rejeu2.txt
+awk '/^REJEU-RUN1 ===/{f=1;next} /^REJEU-RUN1-FIN ===/{f=0;next}
+     /^REJEU-RUN2 ===/{f=2;next} /^REJEU-RUN2-FIN ===/{f=0;next}
+     f==1{sub(/\r$/, ""); print > "/tmp/glane-rejeu1.txt"}
+     f==2{sub(/\r$/, ""); print > "/tmp/glane-rejeu2.txt"}' "$CONSOLE"
+TOTAL=$(wc -l < /tmp/glane-rejeu1.txt 2>/dev/null || echo 0)
+if [ -s /tmp/glane-rejeu1.txt ] && cmp -s /tmp/glane-rejeu1.txt /tmp/glane-rejeu2.txt; then
+    DET="IDENTIQUES octet pour octet ($TOTAL mesures comparées, rejouées DANS QNX 8.0)"
 else
-    DET="DIFFÉRENTS (anormal — le rejeu n'est pas déterministe)"
+    DET="DIFFÉRENTS ou vides (anormal — le rejeu n'est pas déterministe)"
 fi
 cat > "$CAP/runtime-howto.md" <<EOF
 # Capture d'exécution Glane sur QNX 8.0 (émulateur)
@@ -102,7 +106,7 @@ Outil QNX : qcc $(qcc --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head 
 qemu-system-x86_64 -kernel build-qnx/glane-ifs.bin -m 512 -smp 1 -cpu max \\
   -display none -vga none -serial file:build-qnx/qnx-console.log -no-reboot
 \`\`\`
-IFS minimale (2,3 Mo, sans disque) construite par \`qnx/glane-ifs.build\` :
+IFS minimale ($(du -h "$OUT/glane-ifs.bin" | cut -f1), sans disque) construite par \`qnx/glane-ifs.build\` :
 procnto-smp-instr + startup-x86 (console série 115200) + glaned + qnxproof.
 
 ## Preuve d'OS (uname exécuté DANS l'invité)
@@ -117,8 +121,9 @@ $(head -3 "$CAP/runtime-journal.jsonl" 2>/dev/null)
 \`\`\`
 
 ## Rejeu déterministe (GLA-04)
-Deux exécutions de \`glaned\` avec la même graine (42) dans le même QNX :
-**$DET** — $TOTAL lignes de mesure au total.
+Deux exécutions de \`glaned\` avec la MÊME description, rejouées DANS l'invité
+QNX 8.0 (graine dérivée de l'index du capteur, donc identique à chaque run) :
+**$DET**
 
 ## Rejouer
 \`\`\`sh

@@ -13,6 +13,7 @@ echo " QNX 8.0 - INVITE GLANE"
 echo "=============================================================="
 echo " glaned publie ses mesures dans l'espace de noms de l'invite."
 echo " Derniere mesure publiee (temp-chassis) :"
-cat /dev/shmem/temp-chassis.info 2>/dev/null
-echo " Exemples : ls /dev/shmem ; cat /dev/shmem/imu-accel.info"
+tail -n 1 /dev/shmem/temp-chassis.info 2>/dev/null
+echo " Publication en direct : temp-chassis (1 mesure/s, supervisee)."
+echo " Exemples : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
 echo "=============================================================="

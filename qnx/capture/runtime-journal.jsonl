@@ -3,3 +3,15 @@
 {"s":"imu-accel","id":2,"seq":58,"ts_ns":570000000,"v_m":6250,"unit":"g","quality":"ok"}
 {"s":"imu-accel","id":2,"seq":59,"ts_ns":580000000,"v_m":6500,"unit":"g","quality":"ok"}
 {"s":"imu-accel","id":2,"seq":60,"ts_ns":590000000,"v_m":6750,"unit":"g","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":1,"ts_ns":0,"v_m":42500,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":2,"ts_ns":100000000,"v_m":46543,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":3,"ts_ns":200000000,"v_m":50548,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":4,"ts_ns":300000000,"v_m":54474,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":5,"ts_ns":400000000,"v_m":58285,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":6,"ts_ns":500000000,"v_m":61944,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":1,"ts_ns":0,"v_m":42500,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":2,"ts_ns":100000000,"v_m":46543,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":3,"ts_ns":200000000,"v_m":50548,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":4,"ts_ns":300000000,"v_m":54474,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":5,"ts_ns":400000000,"v_m":58285,"unit":"C","quality":"ok"}
+{"s":"temp-chassis","id":1,"seq":6,"ts_ns":500000000,"v_m":61944,"unit":"C","quality":"ok"}

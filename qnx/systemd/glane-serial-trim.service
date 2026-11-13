@@ -1,0 +1,15 @@
+# glane-serial-trim.service — rotation du journal série de la vitrine Glane.
+#
+# Le publisher permanent de la vitrine écrit un battement de coeur par seconde
+# dans le journal série (build-qnx/vitrine/serial.log). Sur plusieurs jours le
+# fichier grossit (~4 Mo/jour). Quand il dépasse 50 Mo, on redémarre l'invité
+# (QEMU tronque le journal à l'ouverture) : 10 s d'interruption, pas de trou
+# de zéros dans le fichier (une troncature à chaud laisserait QEMU écrire à
+# son ancien offset, donc des NUL).
+[Unit]
+Description=Rotation du journal série de la vitrine Glane (QNX)
+After=glane-qemu.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'f=/home/baptiste/Bureau/glane/build-qnx/vitrine/serial.log; [ -f "$f" ] && [ "$(stat -c%%s "$f")" -gt 50000000 ] && systemctl --user restart glane-qemu.service || true'

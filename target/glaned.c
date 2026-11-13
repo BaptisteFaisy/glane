@@ -14,6 +14,7 @@
 #ifdef __QNX__
 #define _QNX_SOURCE 1
 #include <sys/neutrino.h>
+#include <time.h>
 #else
 #define _POSIX_C_SOURCE 200809L
 #include <time.h>
@@ -47,6 +48,21 @@ static int nsensors;
 
 static long long lat_vals[MAX_LAT];
 static int lat_count;
+
+/* Pause d'un pas (10 ms) — utilisée UNIQUEMENT en mode infini.
+ *
+ * Pourquoi : sans pause, la boucle « pas » tourne aussi vite que l'invité
+ * émulé le permet (CPU saturé, ~8 000 pas/s mesurés). Le pas doit suivre le
+ * temps réel, sinon `period_ms` ne veut rien dire et la démo sature la
+ * machine. En mode fini (rejeu, captures), aucune pause : le rejeu doit être
+ * instantané et déterministe. */
+static void tick_pause(void)
+{
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = 10000000L;   /* 10 ms */
+    nanosleep(&ts, NULL);
+}
 
 /* Horloge monotone : ClockTime (QNX, 3 args) ou clock_gettime (hôte). */
 static long long now_ns(void)
@@ -145,6 +161,17 @@ static void report_latency(void)
            lat_vals[lat_count - 1]);
 }
 
+/* Battement de coeur du mode infini : une ligne toutes les 100 pas (1 s). */
+static void heartbeat(long step)
+{
+    unsigned long total = 0;
+    for (int s = 0; s < nsensors; s++) {
+        total += (unsigned long)sensors[s].pub.published;
+    }
+    fprintf(stderr, "glaned: mode infini — %ld pas, %lu publications\n",
+            step + 1, total);
+}
+
 /* Produit puis publie une mesure d'un capteur. */
 static void step_sensor(sensor_t *s, int64_t ts_ns)
 {
@@ -165,18 +192,28 @@ static void step_sensor(sensor_t *s, int64_t ts_ns)
 int main(int argc, char **argv)
 {
     if (argc < 3) {
-        fprintf(stderr, "usage: %s <pas> <desc1.json> [desc2.json ...]\n", argv[0]);
+        fprintf(stderr,
+                "usage: %s <pas> <desc1.json> [desc2.json ...]\n"
+                "       pas = 0 : mode infini (publie tant que le processus vit)\n",
+                argv[0]);
         return 2;
     }
     long steps = strtol(argv[1], NULL, 10);
+    if (steps < 0) {
+        fprintf(stderr, "pas invalide: %s\n", argv[1]);
+        return 2;
+    }
     for (int i = 2; i < argc && nsensors < MAX_SENSORS; i++) {
         load_sensor(argv[i], nsensors);
     }
-    if (nsensors == 0 || steps <= 0) {
-        fprintf(stderr, "aucun capteur valide ou pas invalide\n");
+    if (nsensors == 0) {
+        fprintf(stderr, "aucun capteur valide\n");
         return 2;
     }
-    for (long step = 0; step < steps; step++) {
+    if (steps == 0) {
+        fprintf(stderr, "glaned: mode infini (pas=0) — publication continue\n");
+    }
+    for (long step = 0; steps == 0 || step < steps; step++) {
         int64_t ts_ns = (int64_t)step * TICK_MS * 1000000LL;
         for (int s = 0; s < nsensors; s++) {
             long period_ticks = sensors[s].desc.period_ms / TICK_MS;
@@ -185,6 +222,12 @@ int main(int argc, char **argv)
                 continue;
             }
             step_sensor(&sensors[s], ts_ns);
+        }
+        if (steps == 0) {
+            if ((step % 100) == 99) {
+                heartbeat(step);
+            }
+            tick_pause();
         }
     }
     for (int s = 0; s < nsensors; s++) {

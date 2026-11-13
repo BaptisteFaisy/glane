@@ -1,0 +1,10 @@
+[Unit]
+Description=Rotation du journal série de la vitrine Glane (toutes les 6 h)
+
+[Timer]
+OnBootSec=30min
+OnUnitActiveSec=6h
+Unit=glane-serial-trim.service
+
+[Install]
+WantedBy=timers.target

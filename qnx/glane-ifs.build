@@ -48,8 +48,18 @@
     echo -n "cat /dev/sensors/temp-chassis -> "
     cat /dev/sensors/temp-chassis
     echo
+    echo "--- rejeu deterministe SUR LA CIBLE : 2 runs, meme description (GLA-04) ---"
+    GLANE_SENSOR_DIR=/dev/shmem glaned 60 /proc/boot/temp-chassis.json
+    echo "REJEU-RUN1 ==="
+    tail -n 6 /dev/shmem/temp-chassis.info
+    echo "REJEU-RUN1-FIN ==="
+    GLANE_SENSOR_DIR=/dev/shmem glaned 60 /proc/boot/temp-chassis.json
+    echo "REJEU-RUN2 ==="
+    tail -n 6 /dev/shmem/temp-chassis.info
+    echo "REJEU-RUN2-FIN ==="
+    echo
     echo "--- superviseur (HAM de poche) : on tue glaned, il est relance ---"
-    gsuper /proc/boot/glaned 99999 /proc/boot/temp-chassis.json
+    gsuper -m 2 /proc/boot/glaned 0 /proc/boot/temp-chassis.json
     sleep 2
     slay glaned
     sleep 2
@@ -60,6 +70,7 @@
     echo " Voici un vrai systeme QNX : shell ksh interactif."
     echo " Essayez : ls /dev/shmem ; cat /dev/shmem/temp-chassis.info"
     echo "=============================================================="
+    echo "===== FIN ====="
     exec ksh -l
 }
 
