@@ -61,7 +61,55 @@ preuve, qui reste intacte) et y ajoute **les deux consoles** :
 - la console **VGA** (`con1`, ouverte par `devc-con`) montre les mesures puis
   l'invite `ksh` interactive (`qnx/invite.sh` + `qnx/invite.kshrc`).
 
-## Pièges payés (ne pas les rediscover)
+## Garde : la vitrine reste live (veilleur toutes les 2 min)
+
+`qnx/watchdog-vitrine.sh` + `glane-watchdog.service` / `glane-watchdog.timer`
+(unités dans `qnx/systemd/`) contrôlent **quatre** verdicts et réparent selon
+lequel tombe :
+
+| Verdict | Contrôle | Réparation |
+|---|---|---|
+| LOCAL | `127.0.0.1:8101/screen.png` → 200, image ≥ 1,5 ko | — |
+| MOUVANT | deux cadres espacés de 10 s **différents** (le tableau de bord se repeint à 8 s) | — |
+| SÉRIE | `build-qnx/vitrine/serial.log` écrit il y a < 90 s (précision horodatée, pas une taille : la rotation tronque le fichier) | — |
+| PUBLIC | l'URL du funnel répond 200 **depuis l'extérieur** | `tailscale funnel --bg --https=10000 …` |
+
+- LOCAL ou SÉRIE mort → `systemctl --user restart glane-qemu glane-web`
+  (l'invité est éteint) ;
+- image FIGÉE mais SÉRIE vivante → **pause légitime du visiteur**
+  (`echo pause > /dev/shmem/arret`) : on ne touche à rien ;
+- invité vif mais PUBLIC injoignable → le **tunnel** est tombé, pas les
+  services : on repose le funnel (idempotent).
+
+**Piège payé (14/11)** : quand l'invité est mort, `web.py` sert un *placeholder*
+animé — le HTTP vaut 200 et l'image bouge. Un contrôle « 200 + image qui
+change » laisse donc passer une vitrine faussement vivante. Seul le journal
+série (écrit par `glaned` DANS l'invité) lève le doute. D'où le verdict SÉRIE.
+
+Installation (idempotente) :
+
+```sh
+cd ~/Bureau/glane
+install -m 644 qnx/systemd/glane-watchdog.service qnx/systemd/glane-watchdog.timer \
+    ~/.config/systemd/user/
+# le script LUI reste dans le dépôt : les unités pointent sur
+# %h/Bureau/glane/qnx/watchdog-vitrine.sh (jamais une copie systemd).
+systemctl --user daemon-reload
+systemctl --user enable --now glane-watchdog.timer glane-serial-trim.timer
+qnx/watchdog-vitrine.sh          # un tour à la main : état -> build-qnx/vitrine/watchdog.json
+```
+
+L'état cumulé est écrit dans `build-qnx/vitrine/watchdog.json` (un champ par
+verdict : un contrôle n'écrase pas l'autre).
+
+## Rotation du journal série
+
+`glane-serial-trim.service` / `.timer` (mêmes dossiers) : quand
+`serial.log` dépasse 50 Mo, l'invité est redémarré (QEMU le tronque à
+l'ouverture) — 10 s d'interruption, aucun trou de zéros. **Le timer doit être
+activé** (`enable --now`), sinon le journal croît de ~5 Mo/jour sans limite.
+
+
 
 1. **`exec ksh -l` ne marche pas** dans le `[+script]` de démarrage :
    « Unable to start "exec" (2) » — ce n'est pas un shell. Passer par `on`.

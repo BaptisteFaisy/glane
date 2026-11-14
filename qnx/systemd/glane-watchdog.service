@@ -1,0 +1,19 @@
+# glane-watchdog.service — garde de la vitrine GLANE (une exécution).
+#
+# Vérifie les DEUX chemins (local 127.0.0.1:8101 et URL publique Funnel) et
+# répare selon le verdict : services si le local est mort, tunnel si seul le
+# public est mort. Voir qnx/watchdog-vitrine.sh.
+#
+# NOTE — %h n'est PAS développé dans Environment= (systemd) : chemins absolus.
+[Unit]
+Description=Garde de la vitrine Glane (local + URL publique)
+After=glane-web.service glane-qemu.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/Bureau/glane/qnx/watchdog-vitrine.sh
+TimeoutStartSec=180
+
+[Install]
+WantedBy=default.target

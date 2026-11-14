@@ -1,0 +1,16 @@
+# glane-watchdog.timer — la garde tourne toutes les 2 minutes.
+#
+# 2 min : le lien du jury est la vitrine elle-même ; une coupure vue 10 min
+# plus tard (patron du projet Creux, 14/11) est déjà trop tard. Deux requêtes
+# HTTP par cycle, coût négligeable.
+[Unit]
+Description=Rotation de la garde de la vitrine Glane
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=120
+AccuracySec=15s
+Persistent=true
+
+[Install]
+WantedBy=timers.target
